@@ -30,3 +30,9 @@
 *.exe
 *.out
 *.app
+*.checksum
+.pio
+.vscode/
+.pio/build/project.checksum
+.vscode/c_cpp_properties.json
+.pio/build/project.checksum
