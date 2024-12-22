@@ -10,6 +10,7 @@
             "includePath": [
                 "c:/projects/arduino/CatFeeder/include",
                 "c:/projects/arduino/CatFeeder/src",
+                "c:/projects/arduino/CatFeeder/.pio/libdeps/nodemcuv2/Bonezegei_A4988/src",
                 "c:/projects/arduino/CatFeeder/.pio/libdeps/nodemcuv2/HX711/src",
                 "C:/Users/plowater/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
                 "C:/Users/plowater/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
@@ -60,6 +61,7 @@
                 "path": [
                     "c:/projects/arduino/CatFeeder/include",
                     "c:/projects/arduino/CatFeeder/src",
+                    "c:/projects/arduino/CatFeeder/.pio/libdeps/nodemcuv2/Bonezegei_A4988/src",
                     "c:/projects/arduino/CatFeeder/.pio/libdeps/nodemcuv2/HX711/src",
                     "C:/Users/plowater/.platformio/packages/framework-arduinoespressif8266/tools/sdk/include",
                     "C:/Users/plowater/.platformio/packages/framework-arduinoespressif8266/cores/esp8266",
