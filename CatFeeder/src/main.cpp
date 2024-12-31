@@ -10,7 +10,7 @@ const int STEP_PIN = D2;
 const int DIR_PIN = D3;
 const int SLEEP_PIN = D6; // 12;
 
-HX711 scale;
+HX711 scale; 
 
 #include <Bonezegei_A4988.h>
 #define FORWARD 1
@@ -33,7 +33,7 @@ void xstep()
   }
 }
 
-void xstep_enable()
+void xxstep_enable()
 {
   digitalWrite(SLEEP_PIN, LOW);
 }
