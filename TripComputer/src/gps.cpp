@@ -4,8 +4,11 @@
 #include "gps.h"
 #define GPS_MAIN
 
+#define SPEEDS 5
 flags_struct_t fc;
-uint32_t init_speed[5] = {9600, 19200, 38400, 57600, 115200};
+uint32_t init_speed[SPEEDS] = {9600, 19200, 38400, 57600, 115200};
+// Force 38400
+//uint32_t init_speed[1] = {38400};
 int GPS_numSat;
 bool updateTimex = true;
 unsigned long last_seconds;
@@ -33,7 +36,7 @@ void GPS_SerialInit(void)
   Serial.print("Start GPS INIT\n");
 #endif
 
-  for (uint8_t i = 0; i < 5; i++)
+  for (uint8_t i = 0; i < SPEEDS; i++)
   {
     // SerialWriteString(MON_SERIAL, "Speed\n");
     SerialOpen(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
@@ -57,11 +60,11 @@ void GPS_SerialInit(void)
     {
       delay(10);
 #ifdef PL_DEBUG
-      Serial.print("X");
+      //Serial.print("X");
 #endif
     }
 #ifdef PL_DEBUG
-    Serial.print("\n");
+    Serial.print("Buffer empty\n");
 #endif
     SerialClose();
   }

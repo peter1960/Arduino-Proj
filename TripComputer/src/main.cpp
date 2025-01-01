@@ -53,9 +53,14 @@ void setup()
   Serial.begin(115200);
 #ifdef PL_DEBUG
 
+  Serial.println("");
   Serial.println("Serial Txd is on pin: " + String(TXD2));
   Serial.println("Serial Rxd is on pin: " + String(RXD2));
 
+#endif
+
+#ifdef PL_DEBUG
+  Serial.println("Setup Display");
 #endif
   tft.init();
   tft.setRotation(1);
@@ -86,8 +91,16 @@ void setup()
   bx = bx + BWIDE + 2;
   tft.drawRect(bx, BY, BWIDE, BHIGH, TFT_WHITE); // Draw bezel line
   tft.fillRect(bx + 1, BY + 1, BWIDE - 2, BHIGH - 2, TFT_GREY);
+#ifdef PL_DEBUG
+  Serial.println("Display Done");
+  Serial.println("Setup GPS");
+#endif
 
   GPS_SerialInit();
+
+#ifdef PL_DEBUG
+  Serial.println("GPS Done");
+#endif
   value[SAT_COUNT] = 0;
 }
 void loop()

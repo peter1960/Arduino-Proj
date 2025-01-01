@@ -19,6 +19,7 @@ void SerialOpen(uint32_t baud)
     Serial2.setRxBufferSize(RXBUFFER);
     Serial2.setTxBufferSize(TXBUFFER);
     Serial2.begin(baud, SERIAL_8N1, RXD2, TXD2, false);
+    Serial2.flush();
 }
 void SerialClose()
 {
@@ -28,21 +29,30 @@ void SerialClose()
     Serial.println("Close Port");
 #endif
 }
-bool xxxx = false;
+bool lBuffferIsEmpty = false;
 bool SerialTXfree()
 {
+    /*
 #ifdef PL_DEBUG
-    if (!xxxx)
+    if (!lBuffferIsEmpty)
     {
         log_d("Test");
         Serial.print("Write ");
         Serial.print(String(Serial2.availableForWrite()));
         Serial.print("\n");
-        xxxx = true;
+        lBuffferIsEmpty = true;
     }
 #endif
 
     return TXBUFFER - Serial2.availableForWrite();
+    */
+      if (Serial2.availableForWrite() == TXBUFFER) {
+        log_d("TX buffer is empty.");
+        return true; // Buffer is completely free
+    } else {
+        log_d("TX buffer is not empty.");
+        return false; // Buffer still has data
+    }
 }
 
 uint8_t SerialRead(uint8_t port)
