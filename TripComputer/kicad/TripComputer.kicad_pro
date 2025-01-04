@@ -427,8 +427,12 @@
     }
   },
   "libraries": {
-    "pinned_footprint_libs": [],
-    "pinned_symbol_libs": []
+    "pinned_footprint_libs": [
+      "Peter"
+    ],
+    "pinned_symbol_libs": [
+      "Peter"
+    ]
   },
   "meta": {
     "filename": "TripComputer.kicad_pro",
