@@ -50,6 +50,7 @@ int myFunction(int, int);
 
 void setup()
 {
+#ifndef EMULATE
   Serial.begin(115200);
 #ifdef PL_DEBUG
 
@@ -62,6 +63,11 @@ void setup()
 #ifdef PL_DEBUG
   Serial.println("Setup Display");
 #endif
+#else
+  /* Speed used by emulator */
+  Serial.begin(10400);
+#endif
+
   tft.init();
   tft.setRotation(1);
   tft.fillScreen(TFT_BLACK);
@@ -91,15 +97,19 @@ void setup()
   bx = bx + BWIDE + 2;
   tft.drawRect(bx, BY, BWIDE, BHIGH, TFT_WHITE); // Draw bezel line
   tft.fillRect(bx + 1, BY + 1, BWIDE - 2, BHIGH - 2, TFT_GREY);
+#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.println("Display Done");
   Serial.println("Setup GPS");
 #endif
+#endif
 
   GPS_SerialInit();
 
+#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.println("GPS Done");
+#endif
 #endif
   value[SAT_COUNT] = 0;
 }
@@ -110,13 +120,17 @@ void loop()
   while (Serial2.available() > 0)
   {
     int inByte = SerialRead(GPS_SERIAL);
+#ifndef EMULATE
 #ifdef PL_DEBUG
     Serial.print(String(inByte));
 #endif
+#endif
     if (GPS_newFrame(inByte))
     {
+#ifndef EMULATE
 #ifdef PL_DEBUG
       Serial.print("\n");
+#endif
 #endif
     }
   }

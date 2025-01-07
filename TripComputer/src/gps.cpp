@@ -8,7 +8,7 @@
 flags_struct_t fc;
 uint32_t init_speed[SPEEDS] = {9600, 19200, 38400, 57600, 115200};
 // Force 38400
-//uint32_t init_speed[1] = {38400};
+// uint32_t init_speed[1] = {38400};
 int GPS_numSat;
 bool updateTimex = true;
 unsigned long last_seconds;
@@ -59,29 +59,37 @@ void GPS_SerialInit(void)
     while (!SerialTXfree())
     {
       delay(10);
+#ifndef EMULATE
 #ifdef PL_DEBUG
-      //Serial.print("X");
+      // Serial.print("X");
+#endif
 #endif
     }
+#ifndef EMULATE
 #ifdef PL_DEBUG
     Serial.print("Buffer empty\n");
+#endif
 #endif
     SerialClose();
   }
   delay(500);
   SerialOpen(GPS_BAUD);
+#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX config\n");
+#endif
 #endif
   for (uint8_t i = 0; i < sizeof(UBLOX_INIT); i++)
   { // send configuration data in UBX protocol
     SerialWriteGPS(pgm_read_byte(UBLOX_INIT + i));
     delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
+#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX complete\n");
+#endif
 #endif
 }
 
@@ -167,11 +175,6 @@ bool GPS_newFrame(uint8_t data)
       {
         st = 0;
       }
-#ifdef PL_DEBUG
-      // Serial.print("Payload ");
-      // Serial.println(String(_payload_length));
-#endif
-
       _payload_counter = 0; // prepare to receive payload
     }
     else
@@ -202,6 +205,7 @@ bool GPS_newFrame(uint8_t data)
     { // good checksum
       if (_msg_id == MSG_POSLLH)
       {
+#ifndef EMULATE
 #ifdef PL_DEBUG
         Serial.print("Pos ");
         Serial.print(String(_buffer.posllh.latitude));
@@ -209,7 +213,7 @@ bool GPS_newFrame(uint8_t data)
         Serial.print(String(_buffer.posllh.longitude));
         Serial.print(" \n");
 #endif
-
+#endif
         if (fc.GPS_FIX)
         {
 
@@ -233,8 +237,10 @@ bool GPS_newFrame(uint8_t data)
           {
             hours -= 24;
           }
+#ifndef EMULATE
 #ifdef PL_DEBUG
           Serial.print(String(hours));
+#endif
 #endif
 
           char buffer[40]; // Buffer to hold the converted string
@@ -265,7 +271,7 @@ bool GPS_newFrame(uint8_t data)
       }
       else if (_msg_id == MSG_SOL)
       {
-
+#ifndef EMULATE
 #ifdef PL_DEBUG
         Serial.print("Sol ");
         Serial.print(String(_buffer.solution.fix_type));
@@ -280,15 +286,16 @@ bool GPS_newFrame(uint8_t data)
         Serial.print("  Sat ");
         Serial.println(String(_buffer.solution.satellites));
 #endif
-
+#endif
         // SerialWriteString(MON_SERIAL, "Have Sol\n");
         fc.GPS_FIX = 0;
         if ((_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.solution.fix_type == FIX_3D || _buffer.solution.fix_type == FIX_2D))
         {
+#ifndef EMULATE
 #ifdef PL_DEBUG
           Serial.print("\n=====Fix\n");
 #endif
-
+#endif
           fc.GPS_FIX = 1;
           // display(D_STATUS, "Locked");
 
@@ -306,7 +313,9 @@ bool GPS_newFrame(uint8_t data)
           // display(D_SAT, "Sat Count:");
           char buffer[10]; // Buffer to hold the converted string
           sprintf(buffer, "%d", tmpGPS_numSat);
+#ifndef EMULATE
           Serial.println(buffer);
+#endif
           // display(D_SAT_COUNT, buffer);
           GPS_numSat = tmpGPS_numSat;
         }

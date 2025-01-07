@@ -11,10 +11,12 @@ static uint8_t serialBufferTX[TX_BUFFER_SIZE][UART_NUMBER];
 
 void SerialOpen(uint32_t baud)
 {
+    #ifndef EMULATE
 #ifdef PL_DEBUG
     Serial.print("Speed Open ");
     Serial.print(String(baud));
     Serial.print("\n");
+#endif
 #endif
     Serial2.setRxBufferSize(RXBUFFER);
     Serial2.setTxBufferSize(TXBUFFER);
@@ -25,8 +27,10 @@ void SerialClose()
 {
     Serial2.flush(true);
     Serial2.end();
+    #ifndef EMULATE
 #ifdef PL_DEBUG
     Serial.println("Close Port");
+#endif
 #endif
 }
 bool lBuffferIsEmpty = false;
