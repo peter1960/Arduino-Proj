@@ -12,8 +12,9 @@ uint32_t init_speed[SPEEDS] = {9600, 19200, 38400, 57600, 115200};
 int GPS_numSat;
 bool updateTimex = true;
 unsigned long last_seconds;
-void DisplayStat(int sat);
-void DisplayTime(const char *time);
+
+//void DisplayStat(int sat);
+//void DisplayTime(const char *time);
 
 uint16_t grab_fields(char *src, uint8_t mult);
 uint8_t hex_c(uint8_t n);
@@ -246,7 +247,7 @@ bool GPS_newFrame(uint8_t data)
           char buffer[40]; // Buffer to hold the converted string
           //  Convert the numerical value to a string using sprintf
           sprintf(buffer, "%02lu : %02lu : %02lu", hours, minutes, seconds);
-          DisplayTime(buffer);
+          //PL DisplayTime(buffer);
           /*
           myGLCD.setColor(255, 255, 255);
           display(D_TIME, "Time:");
@@ -264,7 +265,7 @@ bool GPS_newFrame(uint8_t data)
         }
         else
         {
-          DisplayTime("No Lock");
+          //PL DisplayTime("No Lock");
           // display(D_TIME, "Time:");
         }
         ret = true; // POSLLH message received, allow blink GUI icon and LED, frame available for nav computation
@@ -307,7 +308,7 @@ bool GPS_newFrame(uint8_t data)
         }
 
         int tmpGPS_numSat = _buffer.solution.satellites;
-        DisplayStat(tmpGPS_numSat);
+       // PL DisplayStat(tmpGPS_numSat);
         if (tmpGPS_numSat != GPS_numSat)
         {
           // display(D_SAT, "Sat Count:");

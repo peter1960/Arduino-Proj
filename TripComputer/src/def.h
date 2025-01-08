@@ -13,8 +13,9 @@
 #define TXD2 17
 #define RXBUFFER 500
 #define TXBUFFER 500
-#define SPEED_ROT 141
+
 // uncomment to enable emulator connection
 #define EMULATE 1
+#define BOARD_LED 14
 //#define PL_DEBUG 1
 #endif
