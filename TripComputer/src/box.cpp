@@ -18,34 +18,54 @@ pBox::pBox(int left, int top, int width, int height, int fillon, int filloff)
     this->filloff = filloff;
 }
 
+void pBox::TweekY(int tweek)
+{
+    this->yTweek = tweek;
+}
 void pBox::Draw(TFT_eSPI &tft)
 {
     tft.drawRect(left, top, width, height, TFT_WHITE); // Draw bezel line
-    FillRect(tft, false);
+    FillRect(tft, ButtonOff);
 }
-void pBox::FillRect(TFT_eSPI &tft, bool On)
+bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
 {
-    if (On)
+    if (BoxState == ButtonOn && LastColor != fillon)
     {
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, fillon);
+        LastColor = fillon;
+        return true;
     }
-    else
+    else if (BoxState == ButtonOff && LastColor != filloff)
     {
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, filloff);
+        LastColor == filloff;
+        return true;
     }
+    return false;
 }
 
-void pBox::DrawText(TFT_eSPI &tft, const char *string, bool On)
+void pBox::DrawText(TFT_eSPI &tft, const char *string, TriState BoxState)
 {
-    // tft.loadFont(AA_FONT_SMALL); // Must load the font first
-    FillRect(tft, On);
-    if (On)
+    /* Need to redraw if color changed or text*/
+    if (FillRect(tft, BoxState) || strncmp(lastText, string, 16) != 0)
     {
-        tft.setTextColor(TFT_BLACK); // Text colour
+        if (BoxState == ButtonOn)
+        {
+            tft.setTextColor(TFT_BLACK); // On Text colour
+        }
+        else
+        {
+            tft.setTextColor(TFT_WHITE); // Off Text colour
+        }
+        if (yTweek < 999)
+        {
+            tft.drawCentreString(string, left + (width / 2), top + (height / 4) + yTweek, 2);
+        }
+        else
+        {
+            tft.drawCentreString(string, left + (width / 2), top + (height / 4), 2);
+        }
+        strncpy(lastText, string, 16);
+        lastText[15] = '\0';
     }
-    else
-    {
-        tft.setTextColor(TFT_WHITE); // Text colour
-    }
-    tft.drawCentreString(string, left + (width / 2), top + (height / 4), 2);
 }
