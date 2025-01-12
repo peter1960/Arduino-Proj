@@ -70,7 +70,6 @@ void setup()
   StartWifi();
   dis->WiFiOn();
 
-  dis->DisplayTime(WiFi.localIP().toString().c_str());
   OTAsetup();
   updateTime = millis(); // Next update time
 
@@ -94,7 +93,7 @@ bool ECUconnected = false;
 
 void loop()
 {
-  dis->DisplayTime(WiFi.localIP().toString().c_str());
+  dis->ipAdress(WiFi.localIP().toString().c_str());
   OTAcheck();
   // if (!ECUconnected)
   //{
@@ -154,7 +153,7 @@ void loop()
         value[5] = 50 + 50 * sin((d + 300) * 0.0174532925);
     */
     // unsigned long t = millis();
-    dis->plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
+    //dis->plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
 
     // dis.plotSpeed(value[0], 0); // It takes between 2 and 12ms to replot the needle with zero delay
     //  Serial.println(millis()-t); // Print time taken for meter update

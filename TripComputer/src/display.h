@@ -6,9 +6,14 @@
 #define TFT_GREY 0x5AEB
 //* these are button dims
 #define BX 240
-#define BY 15
+#define BY 5
 #define BWIDE 49
 #define BHIGH 29
+// IP Box
+#define IX 0
+#define IY 300
+#define IWIDE 109
+#define IHIGH 20
 
 // linear bar sizes
 #define BAR_HEIGHT 155
@@ -39,6 +44,8 @@ private:
     };
 
     pBox *b_Wifi;
+    pBox *b_Rec;
+    pBox *b_IP;
 
 public:
     Display(void);
@@ -52,4 +59,7 @@ public:
     void DisplayStat(int sat);
     void WiFiOn();
     void WiFiOff();
+    void RecOn();
+    void RecOff();
+    void ipAdress(const char *ip);
 };

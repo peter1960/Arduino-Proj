@@ -11,7 +11,9 @@ Display::Display()
     //tft.fillRect(5, 3, 230, 119, TFT_WHITE);
     value[SAT_COUNT] = 0;
     b_Wifi = new pBox(BX ,BY, BWIDE, BHIGH,TFT_GREEN,TFT_RED);
-
+    b_Rec = new pBox(BX + BWIDE ,BY, BWIDE, BHIGH,TFT_GREEN,TFT_RED);
+    b_IP = new pBox(IX ,IY, IWIDE, IHIGH,TFT_GREEN,TFT_BLACK);
+    b_IP->TweekY(-3);
 }
 void Display::plotSpeed(int value, byte ms_delay)
 {
@@ -95,12 +97,24 @@ void Display::screenLayout()
 {
     b_Wifi->Draw(tft);
     WiFiOff();
+    b_Rec->Draw(tft);
+    RecOff();
+    b_IP->Draw(tft);
 }
 void Display::WiFiOn(){
-    b_Wifi->DrawText(tft,"Wifi",true);
+    b_Wifi->DrawText(tft,"Wifi",ButtonOn);
 }
 void Display::WiFiOff(){
-    b_Wifi->DrawText(tft,"Wifi",false);
+    b_Wifi->DrawText(tft,"Wifi",ButtonOff);
+}
+void Display::RecOn(){
+    b_Rec->DrawText(tft,"Rec",ButtonOn);
+}
+void Display::RecOff(){
+    b_Rec->DrawText(tft,"Rec",ButtonOff);
+}
+void Display::ipAdress(const char *ip){
+    b_IP->DrawText(tft,ip,ButtonOff);
 }
 
 void Display::analogMeter()
