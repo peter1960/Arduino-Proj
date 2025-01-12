@@ -9,7 +9,7 @@ static volatile uint8_t serialHeadTX[UART_NUMBER];
 static volatile uint8_t serialTailTX[UART_NUMBER];
 static uint8_t serialBufferTX[TX_BUFFER_SIZE][UART_NUMBER];
 
-void SerialOpen(uint32_t baud)
+void Serial2Open(uint32_t baud)
 {
     #ifndef EMULATE
 #ifdef PL_DEBUG
@@ -23,7 +23,7 @@ void SerialOpen(uint32_t baud)
     Serial2.begin(baud, SERIAL_8N1, RXD2, TXD2, false);
     Serial2.flush();
 }
-void SerialClose()
+void Serial2Close()
 {
     Serial2.flush(true);
     Serial2.end();
@@ -34,7 +34,7 @@ void SerialClose()
 #endif
 }
 bool lBuffferIsEmpty = false;
-bool SerialTXfree()
+bool Serial2TXfree()
 {
     /*
 #ifdef PL_DEBUG
@@ -59,18 +59,18 @@ bool SerialTXfree()
     }
 }
 
-uint8_t SerialRead(uint8_t port)
+uint8_t Serial2Read(uint8_t port)
 {
     uint8_t c = Serial2.read();
     return c;
 }
 
-uint8_t SerialAvailable(uint8_t port)
+uint8_t Serial2Available(uint8_t port)
 {
     return ((uint8_t)(serialHeadRX[port] - serialTailRX[port])) % RX_BUFFER_SIZE;
 }
 
-uint8_t SerialUsedTXBuff(uint8_t port)
+uint8_t Serial2UsedTXBuff(uint8_t port)
 {
     return ((uint8_t)(serialHeadTX[port] - serialTailTX[port])) % TX_BUFFER_SIZE;
 }
@@ -84,13 +84,13 @@ void SerialSerialize(uint8_t port, uint8_t a)
     serialHeadTX[port] = t;
 }
 */
-void SerialWriteGPS(uint8_t c)
+void Serial2WriteGPS(uint8_t c)
 {
     Serial2.write(c);
     Serial2.flush(true);
 }
 
-void SerialWriteHex(uint8_t port, uint8_t c)
+void Serial2WriteHex(uint8_t port, uint8_t c)
 {
     char hexBuffer[5]; // To hold the hex representation (e.g., "0x12\0")
     snprintf(hexBuffer, sizeof(hexBuffer), "0x%02X", (uint8_t)(c));
@@ -102,11 +102,11 @@ void SerialWriteHex(uint8_t port, uint8_t c)
     // SerialWrite(' ');
 }
 
-void SerialWriteString(uint8_t port, const char *c)
+void Serial2WriteString(uint8_t port, const char *c)
 {
     while (*c != '\0')
     {
-        SerialWriteGPS((uint8_t)(*c));
+        Serial2WriteGPS((uint8_t)(*c));
         c++;
     }
 }
