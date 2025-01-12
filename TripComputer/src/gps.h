@@ -1,7 +1,7 @@
 #ifndef _Gps_h
 #define _Gps_h
 
-void GPS_SerialInit(void);
+void GPS_Serial2Init(void);
 bool GPS_newFrame(uint8_t data);
 
 const unsigned char UBLOX_INIT[] PROGMEM = {

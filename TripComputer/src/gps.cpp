@@ -19,17 +19,17 @@ unsigned long last_seconds;
 uint16_t grab_fields(char *src, uint8_t mult);
 uint8_t hex_c(uint8_t n);
 
-static void SerialGpsPrint(const char PROGMEM *str)
+static void Serial2GpsPrint(const char PROGMEM *str)
 {
   char b;
   while (str && (b = pgm_read_byte(str++)))
   {
-    SerialWriteGPS(b);
+    Serial2WriteGPS(b);
     delay(5);
   }
 }
 
-void GPS_SerialInit(void)
+void GPS_Serial2Init(void)
 {
   // SerialOpen(GPS_SERIAL, GPS_BAUD);
   // delay(1000);
@@ -40,12 +40,12 @@ void GPS_SerialInit(void)
   for (uint8_t i = 0; i < SPEEDS; i++)
   {
     // SerialWriteString(MON_SERIAL, "Speed\n");
-    SerialOpen(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
+    Serial2Open(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
 #if (GPS_BAUD == 19200)
     SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,19200,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
 #endif
 #if (GPS_BAUD == 38400)
-    SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,38400,0*26\r\n")); // 38400 baud
+    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,38400,0*26\r\n")); // 38400 baud
 #endif
 #if (GPS_BAUD == 57600)
     SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,57600,0*2D\r\n")); // 57600 baud
@@ -57,7 +57,7 @@ void GPS_SerialInit(void)
     Serial.print("Wait for empty buffer\n");
 #endif
 
-    while (!SerialTXfree())
+    while (!Serial2TXfree())
     {
       delay(10);
 #ifndef EMULATE
@@ -71,10 +71,10 @@ void GPS_SerialInit(void)
     Serial.print("Buffer empty\n");
 #endif
 #endif
-    SerialClose();
+    Serial2Close();
   }
   delay(500);
-  SerialOpen(GPS_BAUD);
+  Serial2Open(GPS_BAUD);
 #ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.print(String(__LINE__));
@@ -83,7 +83,7 @@ void GPS_SerialInit(void)
 #endif
   for (uint8_t i = 0; i < sizeof(UBLOX_INIT); i++)
   { // send configuration data in UBX protocol
-    SerialWriteGPS(pgm_read_byte(UBLOX_INIT + i));
+    Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
     delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
 #ifndef EMULATE

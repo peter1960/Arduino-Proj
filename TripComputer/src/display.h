@@ -1,11 +1,12 @@
 #include <Arduino.h>
 #include <TFT_eSPI.h>
 #include <SPI.h>
+#include <box.h>
 
 #define TFT_GREY 0x5AEB
 //* these are button dims
 #define BX 240
-#define BY 5
+#define BY 15
 #define BWIDE 49
 #define BHIGH 29
 
@@ -37,6 +38,8 @@ private:
         SAT_COUNT = 0
     };
 
+    pBox *b_Wifi;
+
 public:
     Display(void);
     void plotSpeed(int value, byte ms_delay);
@@ -47,4 +50,6 @@ public:
     void DisplayTime(const char *time);
     void screenLayout();
     void DisplayStat(int sat);
+    void WiFiOn();
+    void WiFiOff();
 };

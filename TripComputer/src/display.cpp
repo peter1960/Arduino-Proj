@@ -2,13 +2,15 @@
 
 Display::Display()
 {
-    tft.init();
+
     tft.setRotation(1);
+    tft.init();
     tft.fillScreen(TFT_BLACK);
     // put your setup code here, to run once:
     //tft.fillRect(0, 0, 239, 126, TFT_BLACK);
     //tft.fillRect(5, 3, 230, 119, TFT_WHITE);
     value[SAT_COUNT] = 0;
+    b_Wifi = new pBox(BX ,BY, BWIDE, BHIGH,TFT_GREEN,TFT_RED);
 
 }
 void Display::plotSpeed(int value, byte ms_delay)
@@ -91,14 +93,16 @@ void Display::DisplayStat(int sat)
 }
 void Display::screenLayout()
 {
-    int bx = BX;
-    tft.drawRect(bx, BY, BWIDE, BHIGH, TFT_WHITE); // Draw bezel line
-    tft.fillRect(bx + 1, BY + 1, BWIDE - 2, BHIGH - 2, TFT_GREY);
-
-    bx = bx + BWIDE + 2;
-    tft.drawRect(bx, BY, BWIDE, BHIGH, TFT_WHITE); // Draw bezel line
-    tft.fillRect(bx + 1, BY + 1, BWIDE - 2, BHIGH - 2, TFT_GREY);
+    b_Wifi->Draw(tft);
+    WiFiOff();
 }
+void Display::WiFiOn(){
+    b_Wifi->DrawText(tft,"Wifi",true);
+}
+void Display::WiFiOff(){
+    b_Wifi->DrawText(tft,"Wifi",false);
+}
+
 void Display::analogMeter()
 {
     // Meter outline
