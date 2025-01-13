@@ -72,10 +72,10 @@
 		(end 71 26)
 		(stroke
 			(width 0.2)
-			(type default)
+			(type solid)
 		)
 		(fill none)
-		(layer "F.Cu")
+		(layer "F.SilkS")
 		(uuid "1bb2d607-88f9-403b-94ba-7dd3fce5221a")
 	)
 	(fp_text user "${REFERENCE}"
