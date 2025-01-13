@@ -1,5 +1,6 @@
 #include <box.h>
 
+/*
 pBox::pBox(int left, int top, int width, int height, int fill)
 {
     this->width = width;
@@ -8,6 +9,7 @@ pBox::pBox(int left, int top, int width, int height, int fill)
     this->left = left;
     this->fillon = fillon;
 }
+*/
 pBox::pBox(int left, int top, int width, int height, int fillon, int filloff)
 {
     this->width = width;
@@ -29,16 +31,16 @@ void pBox::Draw(TFT_eSPI &tft)
 }
 bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
 {
-    if (BoxState == ButtonOn && LastColor != fillon)
+    if (lastBoxState != BoxState && BoxState == ButtonOn)
     {
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, fillon);
-        LastColor = fillon;
+        lastBoxState = ButtonOn;
         return true;
     }
-    else if (BoxState == ButtonOff && LastColor != filloff)
+    else if (lastBoxState != BoxState && BoxState == ButtonOff)
     {
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, filloff);
-        LastColor == filloff;
+        lastBoxState = ButtonOff;
         return true;
     }
     return false;
@@ -69,4 +71,3 @@ void pBox::DrawText(TFT_eSPI &tft, const char *string, TriState BoxState)
         lastText[15] = '\0';
     }
 }
-
