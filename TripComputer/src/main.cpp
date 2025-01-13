@@ -10,7 +10,6 @@
 #include <mysecrets.h>
 // TFT_eSPI xtft = TFT_eSPI(); // Invoke custom library
 Display *dis;
-
 uint32_t updateTime = 0; // time for next update
 
 int d = 0;
@@ -58,7 +57,7 @@ void setup()
 #endif
 
   dis->screenLayout();
-  dis->analogMeter(); // Draw analogue meter
+  //dis->analogMeter(); // Draw analogue meter
 
   // dis.plotLinearSat("Sat");
   //  plotLinear("A1", 1 * d, 160);

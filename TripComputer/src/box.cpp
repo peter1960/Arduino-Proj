@@ -69,3 +69,4 @@ void pBox::DrawText(TFT_eSPI &tft, const char *string, TriState BoxState)
         lastText[15] = '\0';
     }
 }
+

@@ -42,13 +42,13 @@
 #define RXD2 16 // U2_TDX for GPS
 #define TXD2 17 // U2_TDX for GPS
 #define GPIO5 5
-#define GPIO18 18 // SCK
-#define GPIO19 19 // MISO
+#define GPIO18 18 // TFT_SCLK
+#define GPIO19 19 // TFT_MISO
 #define GPIO21 21 // SDA
 #define GPIO3 3   // U0_RDX
 #define GPIO1 1   // U0_TDX
 #define GPIO22 22 // SCL
-#define GPIO23 23 // MOSI
+#define GPIO23 23 // TFT_MOSI
 
 // #define PL_DEBUG 1
 #endif

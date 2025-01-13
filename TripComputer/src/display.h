@@ -2,6 +2,7 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <box.h>
+#include <speed-box.h>
 
 #define TFT_GREY 0x5AEB
 //* these are button dims
@@ -14,6 +15,13 @@
 #define IY 300
 #define IWIDE 109
 #define IHIGH 20
+
+// Speed Box
+#define SX 0
+#define SY 1
+#define SWIDE 140
+#define SHIGH 80
+
 
 // linear bar sizes
 #define BAR_HEIGHT 155
@@ -46,6 +54,8 @@ private:
     pBox *b_Wifi;
     pBox *b_Rec;
     pBox *b_IP;
+    pSpeedBox *b_Speed;
+    pSpeedBox *b_Average;
 
 public:
     Display(void);
@@ -62,4 +72,6 @@ public:
     void RecOn();
     void RecOff();
     void ipAdress(const char *ip);
+    void speed(float);
+    void avg_speed(float);
 };

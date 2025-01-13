@@ -7,13 +7,15 @@ Display::Display()
     tft.init();
     tft.fillScreen(TFT_BLACK);
     // put your setup code here, to run once:
-    //tft.fillRect(0, 0, 239, 126, TFT_BLACK);
-    //tft.fillRect(5, 3, 230, 119, TFT_WHITE);
+    // tft.fillRect(0, 0, 239, 126, TFT_BLACK);
+    // tft.fillRect(5, 3, 230, 119, TFT_WHITE);
     value[SAT_COUNT] = 0;
-    b_Wifi = new pBox(BX ,BY, BWIDE, BHIGH,TFT_GREEN,TFT_RED);
-    b_Rec = new pBox(BX + BWIDE ,BY, BWIDE, BHIGH,TFT_GREEN,TFT_RED);
-    b_IP = new pBox(IX ,IY, IWIDE, IHIGH,TFT_GREEN,TFT_BLACK);
+    b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
+    b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
+    b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK);
     b_IP->TweekY(-3);
+    b_Speed = new pSpeedBox(SX, SY, SWIDE, SHIGH);
+    b_Average = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH);
 }
 void Display::plotSpeed(int value, byte ms_delay)
 {
@@ -91,7 +93,7 @@ void Display::DisplayTime(const char *time)
 
 void Display::DisplayStat(int sat)
 {
-  value[SAT_COUNT] = sat;
+    value[SAT_COUNT] = sat;
 }
 void Display::screenLayout()
 {
@@ -100,21 +102,37 @@ void Display::screenLayout()
     b_Rec->Draw(tft);
     RecOff();
     b_IP->Draw(tft);
+    b_Speed->Draw(tft);
+    b_Average->Draw(tft);
 }
-void Display::WiFiOn(){
-    b_Wifi->DrawText(tft,"Wifi",ButtonOn);
+void Display::WiFiOn()
+{
+    b_Wifi->DrawText(tft, "Wifi", ButtonOn);
 }
-void Display::WiFiOff(){
-    b_Wifi->DrawText(tft,"Wifi",ButtonOff);
+void Display::WiFiOff()
+{
+    b_Wifi->DrawText(tft, "Wifi", ButtonOff);
 }
-void Display::RecOn(){
-    b_Rec->DrawText(tft,"Rec",ButtonOn);
+void Display::RecOn()
+{
+    b_Rec->DrawText(tft, "Rec", ButtonOn);
 }
-void Display::RecOff(){
-    b_Rec->DrawText(tft,"Rec",ButtonOff);
+void Display::RecOff()
+{
+    b_Rec->DrawText(tft, "Rec", ButtonOff);
 }
-void Display::ipAdress(const char *ip){
-    b_IP->DrawText(tft,ip,ButtonOff);
+void Display::ipAdress(const char *ip)
+{
+    b_IP->DrawText(tft, ip, ButtonOff);
+}
+
+void Display::speed(float act_speed)
+{
+    b_Speed->Speed(tft, act_speed);
+}
+void Display::avg_speed(float avg_speed)
+{
+    b_Average->Speed(tft, avg_speed);
 }
 
 void Display::analogMeter()
