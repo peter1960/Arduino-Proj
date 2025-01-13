@@ -12,7 +12,7 @@ Display::Display()
     value[SAT_COUNT] = 0;
     b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
     b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
-    b_Lock = new pBox(BX + BWIDE+ BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
+    b_Lock = new pBox(BX + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
     b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK);
     b_IP->TweekY(-3);
     b_Speed = new pSpeedBox(SX, SY, SWIDE, SHIGH);
@@ -103,7 +103,7 @@ void Display::screenLayout()
     b_Rec->Draw(tft);
     RecOff();
     b_Lock->Draw(tft);
-    b_Lock->DrawText(tft,"Lock",ButtonOff);
+    b_Lock->DrawText(tft, "Lock", ButtonOff);
     b_IP->Draw(tft);
     b_Speed->Draw(tft);
     b_Average->Draw(tft);
@@ -127,6 +127,21 @@ void Display::RecOff()
 void Display::ipAdress(const char *ip)
 {
     b_IP->DrawText(tft, ip, ButtonOff);
+}
+void Display::HasLock(bool yes)
+{
+    if (yes)
+    {
+                Serial.println("Lock On");
+
+        b_Lock->DrawText(tft, "Lock", ButtonOn);
+    }
+    else
+    {
+                Serial.println("Lock off");
+
+        b_Lock->DrawText(tft, "Lock", ButtonOff);
+    }
 }
 
 void Display::speed(float act_speed)

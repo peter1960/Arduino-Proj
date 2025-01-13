@@ -1,8 +1,29 @@
 #ifndef _Gps_h
 #define _Gps_h
 
-void GPS_Serial2Init(void);
-bool GPS_newFrame(uint8_t data);
+class gps
+{
+public:
+    gps();
+    void GPS_Serial2Init(void);
+    bool GPS_newFrame(uint8_t data);
+    void insertPeriod(String &number, unsigned int position);
+    void codisplay(int key, uint32_t num);
+    bool HasLock();
+
+private:
+    void Serial2GpsPrint(const char PROGMEM *str);
+    uint16_t grab_fields(char *src, uint8_t mult);
+    uint8_t _step = 0; // State machine state
+    uint8_t _msg_id;
+    uint16_t _payload_length;
+    uint16_t _payload_counter;
+    uint8_t _ck_a; // Packet checksum accumulators
+    uint8_t _ck_b;
+};
+
+// void GPS_Serial2Init(void);
+// bool GPS_newFrame(uint8_t data);
 
 const unsigned char UBLOX_INIT[] PROGMEM = {
     // PROGMEM array must be outside any function !!!

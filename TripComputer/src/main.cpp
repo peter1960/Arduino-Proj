@@ -8,8 +8,9 @@
 #include <kawa.h>
 #include <wifi-mqtt.h>
 #include <mysecrets.h>
-// TFT_eSPI xtft = TFT_eSPI(); // Invoke custom library
+
 Display *dis;
+gps *TheGPS;
 uint32_t updateTime = 0; // time for next update
 
 int d = 0;
@@ -24,40 +25,35 @@ int d = 0;
 
 void setup()
 {
+#ifdef PL_DEBUG
+  Serial.begin(115200);
+#endif
+  // Serial.begin(115200);
   dis = new Display();
-/*  
-  Serial.println("Setup Display");
-  Serial.println("Serial Txd is on pin: " + String(TXD2));
-  Serial.println("Serial Rxd is on pin: " + String(RXD2));
-  Serial.println("TFT_CS is on pin: " + String(TFT_CS));
-  Serial.println("TFT_DC is on pin: " + String(TFT_DC));
-  Serial.println("TFT_RSTG is on pin: " + String(TFT_RST));
-  Serial.println("TFT_SCLK is on pin: " + String(TFT_SCLK));
-  //Serial.println("TFT_BL is on pin: " + String(TFT_BL));
-*/
+  TheGPS = new gps();
+  // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
 
   pinMode(BOARD_LED, OUTPUT);
 
-#ifndef EMULATE
-  Serial.begin(115200);
 #ifdef PL_DEBUG
 
   Serial.println("");
   Serial.println("Serial Txd is on pin: " + String(TXD2));
   Serial.println("Serial Rxd is on pin: " + String(RXD2));
+  Serial.println("Setup Display");
+  Serial.println("TFT_CS is on pin: " + String(TFT_CS));
+  Serial.println("TFT_DC is on pin: " + String(TFT_DC));
+  Serial.println("TFT_RSTG is on pin: " + String(TFT_RST));
+  Serial.println("TFT_SCLK is on pin: " + String(TFT_SCLK));
 
 #endif
 
 #ifdef PL_DEBUG
   Serial.println("Setup Display");
 #endif
-#else
-  /* Speed used by emulator */
-
-#endif
 
   dis->screenLayout();
-  //dis->analogMeter(); // Draw analogue meter
+  // dis->analogMeter(); // Draw analogue meter
 
   // dis.plotLinearSat("Sat");
   //  plotLinear("A1", 1 * d, 160);
@@ -72,19 +68,15 @@ void setup()
   OTAsetup();
   updateTime = millis(); // Next update time
 
-#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.println("Display Done");
   Serial.println("Setup GPS");
 #endif
-#endif
 
-  GPS_Serial2Init();
+  // GPS_Serial2Init();
 
-#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.println("GPS Done");
-#endif
 #endif
 }
 
@@ -94,6 +86,8 @@ void loop()
 {
   dis->ipAdress(WiFi.localIP().toString().c_str());
   OTAcheck();
+  dis->HasLock(TheGPS->HasLock());
+  
   // if (!ECUconnected)
   //{
   //  Start KDS comms
@@ -107,23 +101,21 @@ void loop()
   {
     digitalWrite(BOARD_LED, HIGH);
   }
+
   //}
-  uint8_t c, cc;
+  uint8_t c,
+      cc;
 
   while (Serial2.available() > 0)
   {
     int inByte = Serial2.read(); // SerialRead(GPS_SERIAL);
-#ifndef EMULATE
 #ifdef PL_DEBUG
     Serial.print(String(inByte));
 #endif
-#endif
-    if (GPS_newFrame(inByte))
+    if (TheGPS->GPS_newFrame(inByte))
     {
-#ifndef EMULATE
 #ifdef PL_DEBUG
       Serial.print("\n");
-#endif
 #endif
     }
   }
@@ -152,7 +144,7 @@ void loop()
         value[5] = 50 + 50 * sin((d + 300) * 0.0174532925);
     */
     // unsigned long t = millis();
-    //dis->plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
+    // dis->plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
 
     // dis.plotSpeed(value[0], 0); // It takes between 2 and 12ms to replot the needle with zero delay
     //  Serial.println(millis()-t); // Print time taken for meter update

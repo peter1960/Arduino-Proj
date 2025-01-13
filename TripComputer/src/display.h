@@ -74,4 +74,5 @@ public:
     void ipAdress(const char *ip);
     void speed(float);
     void avg_speed(float);
+     void HasLock(bool yes);
 };

@@ -12,7 +12,6 @@
 #define TXBUFFER 500
 
 // uncomment to enable emulator connection
-#define EMULATE 1
 // PINS
 
 // First Side
@@ -50,5 +49,5 @@
 #define GPIO22 22 // SCL
 #define GPIO23 23 // TFT_MOSI
 
-// #define PL_DEBUG 1
+//#define PL_DEBUG 1
 #endif

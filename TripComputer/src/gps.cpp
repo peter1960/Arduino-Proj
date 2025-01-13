@@ -13,13 +13,22 @@ int GPS_numSat;
 bool updateTimex = true;
 unsigned long last_seconds;
 
-//void DisplayStat(int sat);
-//void DisplayTime(const char *time);
+// void DisplayStat(int sat);
+// void DisplayTime(const char *time);
 
 uint16_t grab_fields(char *src, uint8_t mult);
 uint8_t hex_c(uint8_t n);
 
-static void Serial2GpsPrint(const char PROGMEM *str)
+gps::gps()
+{
+  GPS_Serial2Init();
+}
+
+bool gps::HasLock()
+{
+  return fc.GPS_FIX == 1;
+}
+void gps::Serial2GpsPrint(const char PROGMEM *str)
 {
   char b;
   while (str && (b = pgm_read_byte(str++)))
@@ -29,7 +38,7 @@ static void Serial2GpsPrint(const char PROGMEM *str)
   }
 }
 
-void GPS_Serial2Init(void)
+void gps::GPS_Serial2Init(void)
 {
   // SerialOpen(GPS_SERIAL, GPS_BAUD);
   // delay(1000);
@@ -60,41 +69,33 @@ void GPS_Serial2Init(void)
     while (!Serial2TXfree())
     {
       delay(10);
-#ifndef EMULATE
 #ifdef PL_DEBUG
       // Serial.print("X");
 #endif
-#endif
     }
-#ifndef EMULATE
 #ifdef PL_DEBUG
     Serial.print("Buffer empty\n");
-#endif
 #endif
     Serial2Close();
   }
   delay(500);
   Serial2Open(GPS_BAUD);
-#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX config\n");
-#endif
 #endif
   for (uint8_t i = 0; i < sizeof(UBLOX_INIT); i++)
   { // send configuration data in UBX protocol
     Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
     delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
-#ifndef EMULATE
 #ifdef PL_DEBUG
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX complete\n");
 #endif
-#endif
 }
 
-uint16_t grab_fields(char *src, uint8_t mult)
+uint16_t gps::grab_fields(char *src, uint8_t mult)
 { // convert string to uint16
   uint8_t i;
   uint16_t tmp = 0;
@@ -132,14 +133,8 @@ uint8_t hex_c(uint8_t n)
   return n;
 }
 
-bool GPS_newFrame(uint8_t data)
+bool gps::GPS_newFrame(uint8_t data)
 {
-  static uint8_t _step = 0; // State machine state
-  static uint8_t _msg_id;
-  static uint16_t _payload_length;
-  static uint16_t _payload_counter;
-  static uint8_t _ck_a; // Packet checksum accumulators
-  static uint8_t _ck_b;
 
   uint8_t st = _step + 1;
   bool ret = false;
@@ -206,14 +201,12 @@ bool GPS_newFrame(uint8_t data)
     { // good checksum
       if (_msg_id == MSG_POSLLH)
       {
-#ifndef EMULATE
 #ifdef PL_DEBUG
         Serial.print("Pos ");
         Serial.print(String(_buffer.posllh.latitude));
         Serial.print(" ");
         Serial.print(String(_buffer.posllh.longitude));
         Serial.print(" \n");
-#endif
 #endif
         if (fc.GPS_FIX)
         {
@@ -238,16 +231,15 @@ bool GPS_newFrame(uint8_t data)
           {
             hours -= 24;
           }
-#ifndef EMULATE
+
 #ifdef PL_DEBUG
           Serial.print(String(hours));
-#endif
 #endif
 
           char buffer[40]; // Buffer to hold the converted string
           //  Convert the numerical value to a string using sprintf
           sprintf(buffer, "%02lu : %02lu : %02lu", hours, minutes, seconds);
-          //PL DisplayTime(buffer);
+          // PL DisplayTime(buffer);
           /*
           myGLCD.setColor(255, 255, 255);
           display(D_TIME, "Time:");
@@ -265,14 +257,13 @@ bool GPS_newFrame(uint8_t data)
         }
         else
         {
-          //PL DisplayTime("No Lock");
-          // display(D_TIME, "Time:");
+          // PL DisplayTime("No Lock");
+          //  display(D_TIME, "Time:");
         }
         ret = true; // POSLLH message received, allow blink GUI icon and LED, frame available for nav computation
       }
       else if (_msg_id == MSG_SOL)
       {
-#ifndef EMULATE
 #ifdef PL_DEBUG
         Serial.print("Sol ");
         Serial.print(String(_buffer.solution.fix_type));
@@ -287,20 +278,19 @@ bool GPS_newFrame(uint8_t data)
         Serial.print("  Sat ");
         Serial.println(String(_buffer.solution.satellites));
 #endif
-#endif
         // SerialWriteString(MON_SERIAL, "Have Sol\n");
         fc.GPS_FIX = 0;
         if ((_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.solution.fix_type == FIX_3D || _buffer.solution.fix_type == FIX_2D))
         {
-#ifndef EMULATE
 #ifdef PL_DEBUG
           Serial.print("\n=====Fix\n");
-#endif
 #endif
           fc.GPS_FIX = 1;
           // display(D_STATUS, "Locked");
 
-          // SerialWriteHex(MON_SERIAL, _buffer.solution.fix_type);
+#ifdef PL_DEBUG
+ //SerialWriteHex(MON_SERIAL, _buffer.solution.fix_type);
+#endif
         }
         else
         {
@@ -308,13 +298,13 @@ bool GPS_newFrame(uint8_t data)
         }
 
         int tmpGPS_numSat = _buffer.solution.satellites;
-       // PL DisplayStat(tmpGPS_numSat);
+        // PL DisplayStat(tmpGPS_numSat);
         if (tmpGPS_numSat != GPS_numSat)
         {
           // display(D_SAT, "Sat Count:");
           char buffer[10]; // Buffer to hold the converted string
           sprintf(buffer, "%d", tmpGPS_numSat);
-#ifndef EMULATE
+#ifdef PL_DEBUG
           Serial.println(buffer);
 #endif
           // display(D_SAT_COUNT, buffer);
@@ -345,7 +335,7 @@ bool GPS_newFrame(uint8_t data)
   return ret;
 }
 
-void insertPeriod(String &number, unsigned int position)
+void gps::insertPeriod(String &number, unsigned int position)
 {
   if (position >= 0 && position < number.length())
   {
@@ -358,7 +348,7 @@ void insertPeriod(String &number, unsigned int position)
 //   // Logic to check if the digit at the given index has changed
 // }
 
-void codisplay(int key, uint32_t num)
+void gps::codisplay(int key, uint32_t num)
 {
 
   char formattedString[20];             // Adjust the size accordingly
