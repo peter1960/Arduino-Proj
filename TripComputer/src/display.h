@@ -22,7 +22,6 @@
 #define SWIDE 140
 #define SHIGH 80
 
-
 // linear bar sizes
 #define BAR_HEIGHT 155
 #define BAR_OFFSET 19
@@ -53,6 +52,7 @@ private:
 
     pBox *b_Wifi;
     pBox *b_Rec;
+    pBox *b_Lock;
     pBox *b_IP;
     pSpeedBox *b_Speed;
     pSpeedBox *b_Average;
