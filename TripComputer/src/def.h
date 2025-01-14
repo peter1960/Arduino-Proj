@@ -10,7 +10,7 @@
 #define MON_BAUD 115200
 #define RXBUFFER 500
 #define TXBUFFER 500
-
+#define SPEED_SAMPLES 10  // used to average speed
 // uncomment to enable emulator connection
 // PINS
 

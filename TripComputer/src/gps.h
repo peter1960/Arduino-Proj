@@ -10,6 +10,7 @@ public:
     void insertPeriod(String &number, unsigned int position);
     void codisplay(int key, uint32_t num);
     bool HasLock();
+    float Speed();
 
 private:
     void Serial2GpsPrint(const char PROGMEM *str);
@@ -20,6 +21,8 @@ private:
     uint16_t _payload_counter;
     uint8_t _ck_a; // Packet checksum accumulators
     uint8_t _ck_b;
+    uint32_t GPS_speed;
+    uint32_t avg_GPS_speed[SPEED_SAMPLES];
 };
 
 // void GPS_Serial2Init(void);

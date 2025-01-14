@@ -87,7 +87,7 @@ void loop()
   dis->ipAdress(WiFi.localIP().toString().c_str());
   OTAcheck();
   dis->HasLock(TheGPS->HasLock());
-  
+  dis->speed(TheGPS->Speed());
   // if (!ECUconnected)
   //{
   //  Start KDS comms

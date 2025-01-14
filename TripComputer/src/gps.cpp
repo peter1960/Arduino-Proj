@@ -21,12 +21,24 @@ uint8_t hex_c(uint8_t n);
 
 gps::gps()
 {
+  for (int x = 0; x < SPEED_SAMPLES; x++)
+  {
+    avg_GPS_speed[x] = 0;
+  }
   GPS_Serial2Init();
 }
 
 bool gps::HasLock()
 {
   return fc.GPS_FIX == 1;
+}
+float gps::Speed()
+{
+  if (HasLock())
+  {
+    return GPS_speed;
+  }
+  return 0.0;
 }
 void gps::Serial2GpsPrint(const char PROGMEM *str)
 {
@@ -289,7 +301,7 @@ bool gps::GPS_newFrame(uint8_t data)
           // display(D_STATUS, "Locked");
 
 #ifdef PL_DEBUG
- //SerialWriteHex(MON_SERIAL, _buffer.solution.fix_type);
+          // SerialWriteHex(MON_SERIAL, _buffer.solution.fix_type);
 #endif
         }
         else
@@ -323,10 +335,21 @@ bool gps::GPS_newFrame(uint8_t data)
       else if (_msg_id == MSG_VELNED)
       {
 
-        uint32_t GPS_speed = _buffer.velned.speed_2d;
+        GPS_speed = _buffer.velned.speed_2d;
         GPS_speed = (GPS_speed * 60 * 60) / 100 / 1000;
-        // display(D_SPEED, "Km/h:");       // cm/s
-        // display(D_SPEED_VAL, GPS_speed); // cm/s
+        float tSpeed = 0;
+        for (int x = 0; x < SPEED_SAMPLES - 1; x++)
+        {
+          // move them down by 1
+          avg_GPS_speed[x] = avg_GPS_speed[x + 1];
+          // sum the values
+          tSpeed += avg_GPS_speed[x];
+        }
+        // add on new last value
+        avg_GPS_speed[SPEED_SAMPLES] = GPS_speed;
+        tSpeed += avg_GPS_speed[SPEED_SAMPLES];
+        // get average
+        GPS_speed = tSpeed / SPEED_SAMPLES;
         //  p GPS_ground_course = (uint16_t)(_buffer.velned.heading_2d / 10000); // Heading 2D deg * 100000 rescaled to deg * 10 //not used for the moment
       }
     }
