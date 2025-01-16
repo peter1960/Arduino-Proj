@@ -36,7 +36,7 @@
 #define GPIO8 8
 #define MON_SERIAL 0
 #define GPIO15 15 //TFT_CS
-#define xGPS_SERIAL 2 // TFT_DC
+#define GPIO2 2 // TFT_DC
 #define GPIO4 4 //TFT_RST
 #define RXD2 16 // U2_TDX for GPS
 #define TXD2 17 // U2_TDX for GPS

@@ -88,11 +88,11 @@ void loop()
   OTAcheck();
   dis->HasLock(TheGPS->HasLock());
   dis->speed(TheGPS->Speed());
-  // if (!ECUconnected)
-  //{
-  //  Start KDS comms
-  // ECUconnected = initPulse();
-
+  if (!ECUconnected)
+  {
+    //  Start KDS comms
+    ECUconnected = initPulse();
+  }
   if (ECUconnected)
   {
     digitalWrite(BOARD_LED, LOW);

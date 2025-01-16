@@ -1,12 +1,13 @@
 #include <Arduino.h>
+#include <HardwareSerial.h>
 #include <def.h>
 #include <kawa.h>
 
 // ECU
 // K Output Line - TX
-#define K_OUT 1
+#define K_OUT GPIO3
 // K Input  Line - RX
-#define K_IN 3
+#define K_IN GPIO1
 
 bool initPulse()
 {
@@ -15,8 +16,10 @@ bool initPulse()
   uint8_t resp[3];
 
   Serial.end();
+  //pinMode(K_OUT, OUTPUT);
 
   // This is the ISO 14230-2 "Fast Init" sequence.
+  
   digitalWrite(K_OUT, HIGH);
   delay(300);
   digitalWrite(K_OUT, LOW);
@@ -25,7 +28,6 @@ bool initPulse()
   delay(25);
 
   Serial.begin(10400);
-
   // Start Communication is a single byte "0x81" packet.
   req[0] = 0x81;
   rLen = sendRequest(req, resp, 1, 3);
