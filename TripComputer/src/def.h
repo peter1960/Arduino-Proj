@@ -19,8 +19,8 @@
 #define GPIO39 39  // IN
 #define GPIO34 34  // IN
 #define GPIO35 35  // IN
-#define GPIO32 32
-#define GPIO33 33
+#define K_IN 32
+#define K_OUT 33
 #define GPIO25 25
 #define GPIO26 26
 #define GPIO27 27

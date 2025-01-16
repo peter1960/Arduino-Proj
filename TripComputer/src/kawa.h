@@ -15,3 +15,4 @@ const uint8_t numValidRegs = (uint8_t)(sizeof(validRegs));
 bool initPulse();
 uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, uint8_t maxLen);
 uint8_t calcChecksum(uint8_t *data, uint8_t len);
+float speed();

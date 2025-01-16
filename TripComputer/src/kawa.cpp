@@ -1,25 +1,33 @@
 #include <Arduino.h>
-#include <HardwareSerial.h>
 #include <def.h>
 #include <kawa.h>
+#include "SoftwareSerial.h"
 
-// ECU
-// K Output Line - TX
-#define K_OUT GPIO3
-// K Input  Line - RX
-#define K_IN GPIO1
+EspSoftwareSerial::UART cpuSerial;
+constexpr uint32_t CPUBPS = 10400;
 
+float speed()
+{
+  uint8_t rLen;
+  uint8_t req[2];
+  uint8_t resp[5];
+  req[0] = 0x21;
+  req[1] = 0x0C;
+  rLen = sendRequest(req, resp, 2, 3);
+
+  return rLen;
+}
 bool initPulse()
 {
   uint8_t rLen;
   uint8_t req[2];
   uint8_t resp[3];
 
-  Serial.end();
-  //pinMode(K_OUT, OUTPUT);
+  cpuSerial.end();
+  // pinMode(K_OUT, OUTPUT);
 
   // This is the ISO 14230-2 "Fast Init" sequence.
-  
+
   digitalWrite(K_OUT, HIGH);
   delay(300);
   digitalWrite(K_OUT, LOW);
@@ -27,7 +35,8 @@ bool initPulse()
   digitalWrite(K_OUT, HIGH);
   delay(25);
 
-  Serial.begin(10400);
+  // Serial.begin(10400);
+  cpuSerial.begin(CPUBPS, SWSERIAL_8N1, K_IN, K_OUT, false);
   // Start Communication is a single byte "0x81" packet.
   req[0] = 0x81;
   rLen = sendRequest(req, resp, 1, 3);
@@ -115,7 +124,7 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
   // Now send the command...
   for (uint8_t i = 0; i < bytesToSend; i++)
   {
-    bytesSent += Serial.write(buf[i]);
+    bytesSent += cpuSerial.write(buf[i]);
     delay(ISORequestByteDelay);
   }
 
@@ -128,9 +137,9 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
   // Wait for and deal with the reply
   while ((bytesRcvd <= maxLen) && ((millis() - startTime) < MAXSENDTIME))
   {
-    if (Serial.available())
+    if (cpuSerial.available())
     {
-      c = Serial.read();
+      c = cpuSerial.read();
       startTime = millis(); // reset the timer on each byte received
 
       // PLdelayLeds(ISORequestByteDelay, true);
@@ -228,8 +237,7 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
       }
     }
   }
-
-  return false;
+  return bytesRcvd;
 }
 
 uint8_t calcChecksum(uint8_t *data, uint8_t len)

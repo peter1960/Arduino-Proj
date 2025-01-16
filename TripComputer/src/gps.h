@@ -11,6 +11,8 @@ public:
     void codisplay(int key, uint32_t num);
     bool HasLock();
     float Speed();
+    bool SerialAvailable();
+    uint8_t ReadByte();
 
 private:
     void Serial2GpsPrint(const char PROGMEM *str);

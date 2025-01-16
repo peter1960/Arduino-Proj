@@ -1,10 +1,14 @@
 #include <Arduino.h>
 #include "def.h"
-#include "serial.h"
+#include "SoftwareSerial.h"
+// #include "serial.h"
 #include "gps.h"
 #define GPS_MAIN
-
 #define SPEEDS 5
+
+EspSoftwareSerial::UART gpsSerial;
+constexpr uint32_t TESTBPS = 74880;
+
 flags_struct_t fc;
 uint32_t init_speed[SPEEDS] = {9600, 19200, 38400, 57600, 115200};
 // Force 38400
@@ -45,7 +49,9 @@ void gps::Serial2GpsPrint(const char PROGMEM *str)
   char b;
   while (str && (b = pgm_read_byte(str++)))
   {
-    Serial2WriteGPS(b);
+    //Serial2WriteGPS(b);
+    gpsSerial.write(b);
+    gpsSerial.flush();
     delay(5);
   }
 }
@@ -61,7 +67,9 @@ void gps::GPS_Serial2Init(void)
   for (uint8_t i = 0; i < SPEEDS; i++)
   {
     // SerialWriteString(MON_SERIAL, "Speed\n");
-    Serial2Open(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
+
+    // Serial2Open(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
+    gpsSerial.begin(init_speed[i], SWSERIAL_8N1, RXD2, TX2, false);
 #if (GPS_BAUD == 19200)
     SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,19200,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
 #endif
@@ -78,7 +86,7 @@ void gps::GPS_Serial2Init(void)
     Serial.print("Wait for empty buffer\n");
 #endif
 
-    while (!Serial2TXfree())
+    while (!gpsSerial.availableForWrite())
     {
       delay(10);
 #ifdef PL_DEBUG
@@ -88,17 +96,22 @@ void gps::GPS_Serial2Init(void)
 #ifdef PL_DEBUG
     Serial.print("Buffer empty\n");
 #endif
-    Serial2Close();
+    // Serial2Close();
+    gpsSerial.end();
   }
   delay(500);
-  Serial2Open(GPS_BAUD);
+  // Serial2Open(GPS_BAUD);
+  gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, RXD2, TX2, false);
+
 #ifdef PL_DEBUG
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX config\n");
 #endif
   for (uint8_t i = 0; i < sizeof(UBLOX_INIT); i++)
   { // send configuration data in UBX protocol
-    Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
+    //Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
+    gpsSerial.write(pgm_read_byte(UBLOX_INIT + i));
+    gpsSerial.flush();
     delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
 #ifdef PL_DEBUG
@@ -145,6 +158,13 @@ uint8_t hex_c(uint8_t n)
   return n;
 }
 
+bool gps::SerialAvailable(){
+  return (gpsSerial.available() > 0);
+}
+
+uint8_t gps::ReadByte(){
+    return gpsSerial.read();
+}
 bool gps::GPS_newFrame(uint8_t data)
 {
 

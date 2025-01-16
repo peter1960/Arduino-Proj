@@ -132,14 +132,10 @@ void Display::HasLock(bool yes)
 {
     if (yes)
     {
-                Serial.println("Lock On");
-
         b_Lock->DrawText(tft, "Lock", ButtonOn);
     }
     else
     {
-                Serial.println("Lock off");
-
         b_Lock->DrawText(tft, "Lock", ButtonOff);
     }
 }

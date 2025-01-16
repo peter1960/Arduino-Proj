@@ -28,7 +28,7 @@ void setup()
 #ifdef PL_DEBUG
   Serial.begin(115200);
 #endif
-  // Serial.begin(115200);
+  Serial.begin(115200);
   dis = new Display();
   TheGPS = new gps();
   // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
@@ -81,34 +81,43 @@ void setup()
 }
 
 bool ECUconnected = false;
-
+bool LastECU = true;
 void loop()
 {
   dis->ipAdress(WiFi.localIP().toString().c_str());
   OTAcheck();
   dis->HasLock(TheGPS->HasLock());
   dis->speed(TheGPS->Speed());
+
   if (!ECUconnected)
   {
     //  Start KDS comms
     ECUconnected = initPulse();
+    Serial.print(millis());
+    Serial.println(" Start ECU");
   }
   if (ECUconnected)
   {
-    digitalWrite(BOARD_LED, LOW);
+    {
+      digitalWrite(BOARD_LED, HIGH);
+      if (updateTime <= millis())
+      {
+      }
+      dis->avg_speed(speed());
+      updateTime = millis() + 5000;
+    }
   }
   else
   {
-    digitalWrite(BOARD_LED, HIGH);
+    digitalWrite(BOARD_LED, LOW);
   }
 
-  //}
   uint8_t c,
       cc;
 
-  while (Serial2.available() > 0)
+  while (TheGPS->SerialAvailable())
   {
-    int inByte = Serial2.read(); // SerialRead(GPS_SERIAL);
+    int inByte = TheGPS->ReadByte(); // SerialRead(GPS_SERIAL);
 #ifdef PL_DEBUG
     Serial.print(String(inByte));
 #endif
