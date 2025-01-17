@@ -54,6 +54,7 @@ private:
     pBox *b_Rec;
     pBox *b_Lock;
     pBox *b_IP;
+    pBox *b_ECU;
     pSpeedBox *b_Speed;
     pSpeedBox *b_Average;
 
@@ -74,5 +75,6 @@ public:
     void ipAdress(const char *ip);
     void speed(float);
     void avg_speed(float);
-     void HasLock(bool yes);
+    void HasLock(bool yes);
+    void ECUConnect(bool yes);
 };

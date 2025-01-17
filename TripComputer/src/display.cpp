@@ -13,6 +13,7 @@ Display::Display()
     b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
     b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
     b_Lock = new pBox(BX + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
+    b_ECU = new pBox(BX + BWIDE + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
     b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK);
     b_IP->TweekY(-3);
     b_Speed = new pSpeedBox(SX, SY, SWIDE, SHIGH);
@@ -104,6 +105,8 @@ void Display::screenLayout()
     RecOff();
     b_Lock->Draw(tft);
     b_Lock->DrawText(tft, "Lock", ButtonOff);
+    b_ECU->Draw(tft);
+    b_ECU->DrawText(tft, "ECU", ButtonOff);
     b_IP->Draw(tft);
     b_Speed->Draw(tft);
     b_Average->Draw(tft);
@@ -139,6 +142,19 @@ void Display::HasLock(bool yes)
         b_Lock->DrawText(tft, "Lock", ButtonOff);
     }
 }
+
+void Display::ECUConnect(bool yes)
+{
+    if (yes)
+    {
+        b_ECU->DrawText(tft, "ECU", ButtonOn);
+    }
+    else
+    {
+        b_ECU->DrawText(tft, "ECU", ButtonOff);
+    }
+}
+
 
 void Display::speed(float act_speed)
 {

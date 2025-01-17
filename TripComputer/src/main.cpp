@@ -96,20 +96,16 @@ void loop()
     Serial.print(millis());
     Serial.println(" Start ECU");
   }
+  dis->ECUConnect(ECUconnected);
   if (ECUconnected)
   {
     {
-      digitalWrite(BOARD_LED, HIGH);
       if (updateTime <= millis())
       {
       }
       dis->avg_speed(speed());
       updateTime = millis() + 5000;
     }
-  }
-  else
-  {
-    digitalWrite(BOARD_LED, LOW);
   }
 
   uint8_t c,
