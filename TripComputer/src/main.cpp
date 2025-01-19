@@ -99,12 +99,12 @@ void loop()
     //  Start KDS comms
     if (updateTime <= millis())
     {
-      ECUconnected = initPulse();
+      ECUconnected = ECU_initPulse();
       Serial.print(millis());
       Serial.println(" Start ECU");
     }
   }
-  ECUconnected = alive();
+  ECUconnected = ECU_alive();
   dis->ECUConnect(ECUconnected);
 
   if (ECUconnected)
@@ -113,8 +113,8 @@ void loop()
       if (updateTime <= millis())
       {
       }
-      dis->avg_speed(speed());
-      dis->rpm(RPM());
+      dis->avg_speed(ECU_speed());
+      dis->rpm(ECU_RPM());
       updateTime = millis() + 1000;
     }
   }

@@ -6,38 +6,38 @@
 EspSoftwareSerial::UART cpuSerial;
 constexpr uint32_t CPUBPS = 10400;
 
-bool alive() {
+bool ECU_alive() {
   uint8_t rLen;
   uint8_t req[2];
   uint8_t resp[5];
   req[0] = 0x21;
   req[1] = 0x0B;
-  rLen = sendRequest(req, resp, 2, 3);
+  rLen = ECU_sendRequest(req, resp, 2, 3);
   return rLen > 0;
 
 }
-float RPM(){
+float ECU_RPM(){
   uint8_t rLen;
   uint8_t req[2];
   uint8_t resp[5];
   req[0] = 0x21;
   req[1] = 0x09;
-  rLen = sendRequest(req, resp, 2, 3);
+  rLen = ECU_sendRequest(req, resp, 2, 3);
   float _speed = ((req[2] *256) + req[3]);
   return _speed;
 }
-float speed()
+float ECU_speed()
 {
   uint8_t rLen;
   uint8_t req[2];
   uint8_t resp[5];
   req[0] = 0x21;
   req[1] = 0x0C;
-  rLen = sendRequest(req, resp, 2, 3);
+  rLen = ECU_sendRequest(req, resp, 2, 3);
   float _speed = 100.0;
   return _speed;
 }
-bool initPulse()
+bool ECU_initPulse()
 {
   uint8_t rLen;
   uint8_t req[2];
@@ -59,7 +59,7 @@ bool initPulse()
   cpuSerial.begin(CPUBPS, SWSERIAL_8N1, K_IN, K_OUT, false);
   // Start Communication is a single byte "0x81" packet.
   req[0] = 0x81;
-  rLen = sendRequest(req, resp, 1, 3);
+  rLen = ECU_sendRequest(req, resp, 1, 3);
 
   delay(ISORequestDelay);
   // Response should be 3 bytes: 0xC1 0xEA 0x8F
@@ -69,7 +69,7 @@ bool initPulse()
     // 2 bytes: 0x10 0x80
     req[0] = 0x10;
     req[1] = 0x80;
-    rLen = sendRequest(req, resp, 2, 3);
+    rLen = ECU_sendRequest(req, resp, 2, 3);
 
     // OK Response should be 2 bytes: 0x50 0x80
     if ((rLen == 2) && (resp[0] == 0x50) && (resp[1] == 0x80))
@@ -88,7 +88,7 @@ bool initPulse()
 // maxLen = maximum size of response buffer
 //
 // Returns: number of bytes of response returned.
-uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, uint8_t maxLen)
+uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, uint8_t maxLen)
 {
   uint8_t buf[16], rbuf[16];
   uint8_t bytesToSend;
@@ -127,7 +127,7 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
   if (reqLen == 1)
   {
     buf[3] = request[0];
-    buf[4] = calcChecksum(buf, 4);
+    buf[4] = ECU_calcChecksum(buf, 4);
     bytesToSend = 5;
   }
   else
@@ -137,7 +137,7 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
     {
       buf[4 + z] = request[z];
     }
-    buf[4 + z] = calcChecksum(buf, 4 + z);
+    buf[4 + z] = ECU_calcChecksum(buf, 4 + z);
     bytesToSend = 5 + z;
   }
 
@@ -223,7 +223,7 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
           if (forMe)
           {
             // Only check the checksum if it was for us - don't care otherwise!
-            if (calcChecksum(rbuf, rCnt) == rbuf[rCnt])
+            if (ECU_calcChecksum(rbuf, rCnt) == rbuf[rCnt])
             {
               // Checksum OK.
               return (bytesRcvd);
@@ -260,7 +260,7 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
   return bytesRcvd;
 }
 
-uint8_t calcChecksum(uint8_t *data, uint8_t len)
+uint8_t ECU_calcChecksum(uint8_t *data, uint8_t len)
 {
   uint8_t crc = 0;
 
