@@ -51,13 +51,16 @@ void pBox::DrawText(TFT_eSPI &tft, const char *string, TriState BoxState)
     /* Need to redraw if color changed or text*/
     if (FillRect(tft, BoxState) || strncmp(lastText, string, 16) != 0)
     {
+        Serial.println("State Change");
         if (BoxState == ButtonOn)
         {
             tft.setTextColor(TFT_BLACK); // On Text colour
+            Serial.println("On Text");
         }
         else
         {
             tft.setTextColor(TFT_WHITE); // Off Text colour
+            Serial.println("Off Text");
         }
         if (yTweek < 999)
         {

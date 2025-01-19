@@ -6,6 +6,26 @@
 EspSoftwareSerial::UART cpuSerial;
 constexpr uint32_t CPUBPS = 10400;
 
+bool alive() {
+  uint8_t rLen;
+  uint8_t req[2];
+  uint8_t resp[5];
+  req[0] = 0x21;
+  req[1] = 0x0B;
+  rLen = sendRequest(req, resp, 2, 3);
+  return rLen > 0;
+
+}
+float RPM(){
+  uint8_t rLen;
+  uint8_t req[2];
+  uint8_t resp[5];
+  req[0] = 0x21;
+  req[1] = 0x09;
+  rLen = sendRequest(req, resp, 2, 3);
+  float _speed = ((req[2] *256) + req[3]);
+  return _speed;
+}
 float speed()
 {
   uint8_t rLen;
@@ -14,8 +34,8 @@ float speed()
   req[0] = 0x21;
   req[1] = 0x0C;
   rLen = sendRequest(req, resp, 2, 3);
-
-  return rLen;
+  float _speed = 100.0;
+  return _speed;
 }
 bool initPulse()
 {

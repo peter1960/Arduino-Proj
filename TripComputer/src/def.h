@@ -16,8 +16,8 @@
 
 // First Side
 #define WIFI_ON 36 // IN Wifi On Switch
-#define GPIO39 39  // IN
-#define GPIO34 34  // IN
+#define REC_ON 39  // IN Record Mode
+#define ECU_ON 34  // IN ECU Connect
 #define GPIO35 35  // IN
 #define K_IN 32
 #define K_OUT 33

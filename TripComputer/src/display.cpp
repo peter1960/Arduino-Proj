@@ -18,6 +18,7 @@ Display::Display()
     b_IP->TweekY(-3);
     b_Speed = new pSpeedBox(SX, SY, SWIDE, SHIGH);
     b_Average = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH);
+    b_RPM = new pSpeedBox(SX, SY + SHIGH + SHIGH, SWIDE, SHIGH);
 }
 void Display::plotSpeed(int value, byte ms_delay)
 {
@@ -102,7 +103,7 @@ void Display::screenLayout()
     b_Wifi->Draw(tft);
     WiFiOff();
     b_Rec->Draw(tft);
-    RecOff();
+    Rec(false);
     b_Lock->Draw(tft);
     b_Lock->DrawText(tft, "Lock", ButtonOff);
     b_ECU->Draw(tft);
@@ -110,6 +111,7 @@ void Display::screenLayout()
     b_IP->Draw(tft);
     b_Speed->Draw(tft);
     b_Average->Draw(tft);
+    b_RPM->Draw(tft);
 }
 void Display::WiFiOn()
 {
@@ -119,13 +121,16 @@ void Display::WiFiOff()
 {
     b_Wifi->DrawText(tft, "Wifi", ButtonOff);
 }
-void Display::RecOn()
+void Display::Rec(bool yes)
 {
-    b_Rec->DrawText(tft, "Rec", ButtonOn);
-}
-void Display::RecOff()
-{
-    b_Rec->DrawText(tft, "Rec", ButtonOff);
+    if (yes)
+    {
+        b_Rec->DrawText(tft, "Rec", ButtonOn);
+    }
+    else
+    {
+        b_Rec->DrawText(tft, "Rec", ButtonOff);
+    }
 }
 void Display::ipAdress(const char *ip)
 {
@@ -147,14 +152,13 @@ void Display::ECUConnect(bool yes)
 {
     if (yes)
     {
-        b_ECU->DrawText(tft, "ECU", ButtonOn);
+        b_ECU->DrawText(tft, "ECUo", ButtonOn);
     }
     else
     {
         b_ECU->DrawText(tft, "ECU", ButtonOff);
     }
 }
-
 
 void Display::speed(float act_speed)
 {
@@ -164,6 +168,11 @@ void Display::avg_speed(float avg_speed)
 {
     b_Average->Speed(tft, avg_speed);
 }
+void Display::rpm(float rpm)
+{
+    b_RPM->Speed(tft, rpm);
+}
+
 
 void Display::analogMeter()
 {

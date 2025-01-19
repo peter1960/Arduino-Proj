@@ -34,6 +34,7 @@ void setup()
   // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
 
   pinMode(BOARD_LED, OUTPUT);
+  pinMode(REC_ON, INPUT_PULLUP);
 
 #ifdef PL_DEBUG
 
@@ -82,8 +83,12 @@ void setup()
 
 bool ECUconnected = false;
 bool LastECU = true;
+bool REC_MODE = false;
 void loop()
 {
+  REC_MODE = digitalRead(REC_ON);
+  dis->Rec(REC_MODE);
+
   dis->ipAdress(WiFi.localIP().toString().c_str());
   OTAcheck();
   dis->HasLock(TheGPS->HasLock());
@@ -92,11 +97,16 @@ void loop()
   if (!ECUconnected)
   {
     //  Start KDS comms
-    ECUconnected = initPulse();
-    Serial.print(millis());
-    Serial.println(" Start ECU");
+    if (updateTime <= millis())
+    {
+      ECUconnected = initPulse();
+      Serial.print(millis());
+      Serial.println(" Start ECU");
+    }
   }
+  ECUconnected = alive();
   dis->ECUConnect(ECUconnected);
+
   if (ECUconnected)
   {
     {
@@ -104,8 +114,13 @@ void loop()
       {
       }
       dis->avg_speed(speed());
-      updateTime = millis() + 5000;
+      dis->rpm(RPM());
+      updateTime = millis() + 1000;
     }
+  }
+  else {
+    dis->avg_speed(-2);
+    dis->rpm(-2);
   }
 
   uint8_t c,

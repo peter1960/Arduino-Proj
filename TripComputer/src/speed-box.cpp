@@ -17,12 +17,12 @@ void pSpeedBox::Speed(TFT_eSPI &tft, float speed)
     {
         if (last_speed != -1)
         {
-            sprintf(buffer, "%.1f", last_speed);
+            sprintf(buffer, "%.0f", last_speed);
             tft.setTextColor(TFT_BLACK);
             tft.drawRightString(buffer, left + width - 5, top + (height / 4), 7);
         }
         last_speed = speed;
-        sprintf(buffer, "%.1f", last_speed);
+        sprintf(buffer, "%.0f", last_speed);
         tft.setTextColor(TFT_GREEN);
         tft.drawRightString(buffer, left + width - 5, top + (height / 4), 7);
     }

@@ -57,6 +57,7 @@ private:
     pBox *b_ECU;
     pSpeedBox *b_Speed;
     pSpeedBox *b_Average;
+    pSpeedBox *b_RPM;
 
 public:
     Display(void);
@@ -70,11 +71,11 @@ public:
     void DisplayStat(int sat);
     void WiFiOn();
     void WiFiOff();
-    void RecOn();
-    void RecOff();
     void ipAdress(const char *ip);
     void speed(float);
     void avg_speed(float);
     void HasLock(bool yes);
     void ECUConnect(bool yes);
+    void Rec(bool yes);
+    void rpm(float rpm);
 };
