@@ -24,7 +24,7 @@
 #define GPIO25 25
 #define GPIO26 26
 #define GPIO27 27
-#define BOARD_LED 14
+#define xBOARD_LED 14
 #define GPIO12 12
 #define GPIO13 13
 #define GPIO9 9
