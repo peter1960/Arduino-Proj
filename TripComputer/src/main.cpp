@@ -64,9 +64,9 @@ void setup()
   //  plotLinear("A3", 3 * d, 160);
   //  plotLinear("A4", 4 * d, 160);
   //  plotLinear("A5", 5 * d, 160);
-  //dis->WiFiOff();
+  // dis->WiFiOff();
   StartWifi();
-  //dis->WiFiOn();
+  // dis->WiFiOn();
 
   OTAsetup();
   updateTime = millis(); // Next update time
@@ -88,7 +88,8 @@ bool LastECU = true;
 bool REC_MODE = false;
 bool ECU_MODE = false;
 bool WIFI_MODE = false;
-
+uint32_t ecuFlashTime = 0;
+bool ecuToggle = false;
 void loop()
 {
   OTAcheck();
@@ -99,9 +100,29 @@ void loop()
   REC_MODE = digitalRead(REC_ON);
   dis->Rec(REC_MODE);
   ECU_MODE = digitalRead(ECU_ON);
-  dis->ECUConnect(ECU_MODE);
+  /*
+  Check if ECU should connect and
+  if connected, if not then  will flash
+  */
+  if (ECU_MODE && !connected)
+  {
+    if (ecuFlashTime <= millis())
+    {
+      ecuFlashTime = millis() + 500;
+      ecuToggle = ! ecuToggle;
+      dis->ECUConnect(ecuToggle);
+    }
+  }
+  else if (ECU_MODE){
+      dis->ECUConnect(true);
+
+   }
+   else if (!ECU_MODE){
+      dis->ECUConnect(false);
+
+   }
   WIFI_MODE = digitalRead(WIFI_ON);
-  dis->Wifi(ECU_MODE);
+  dis->Wifi(WIFI_MODE);
 
   // dis->ipAdress(WiFi.localIP().toString().c_str());
   dis->HasLock(TheGPS->HasLock());
@@ -121,7 +142,6 @@ void loop()
       //}
     }
     connected = keepAlive();
-    dis->ECUConnect(connected);
 
     if (connected)
     {

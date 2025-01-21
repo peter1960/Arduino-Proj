@@ -10,11 +10,11 @@ Display::Display()
     // tft.fillRect(0, 0, 239, 126, TFT_BLACK);
     // tft.fillRect(5, 3, 230, 119, TFT_WHITE);
     value[SAT_COUNT] = 0;
-    b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
-    b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
-    b_Lock = new pBox(BX + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
-    b_ECU = new pBox(BX + BWIDE + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED);
-    b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK);
+    b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"Wifi");
+    b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"Rec");
+    b_Lock = new pBox(BX + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"Lock");
+    b_ECU = new pBox(BX + BWIDE + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"ECU");
+    b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK,"IP");
     b_IP->TweekY(-3);
     b_Speed = new pSpeedBox(SX, SY, SWIDE, SHIGH);
     b_Average = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH);
@@ -99,15 +99,10 @@ void Display::DisplayStat(int sat)
 }
 void Display::screenLayout()
 {
-    b_Wifi->Draw(tft);
     Wifi(false);
-    b_Rec->Draw(tft);
     Rec(false);
-    b_Lock->Draw(tft);
     HasLock(false);
-    b_ECU->Draw(tft);
     ECUConnect(false);
-    b_IP->Draw(tft);
     b_Speed->Draw(tft);
     b_Average->Draw(tft);
     b_RPM->Draw(tft);
@@ -116,48 +111,48 @@ void Display::Wifi(bool yes)
 {
     if (yes)
     {
-    b_Wifi->DrawText(tft, "Wifi", ButtonOn);
+    b_Wifi->DrawText(tft, ButtonOn);
     }
     else
     {
-    b_Wifi->DrawText(tft, "Wifi", ButtonOff);
+    b_Wifi->DrawText(tft,  ButtonOff);
     }
 }
 void Display::Rec(bool yes)
 {
     if (yes)
     {
-        b_Rec->DrawText(tft, "Rec", ButtonOn);
+        b_Rec->DrawText(tft, ButtonOn);
     }
     else
     {
-        b_Rec->DrawText(tft, "Rec", ButtonOff);
+        b_Rec->DrawText(tft,  ButtonOff);
     }
 }
 void Display::ipAdress(const char *ip)
 {
-    b_IP->DrawText(tft, ip, ButtonOff);
+    b_IP->DrawText(tft, ButtonOff);
 }
 void Display::HasLock(bool yes)
 {
     if (yes)
     {
-        b_Lock->DrawText(tft, "Lock", ButtonOn);
+        b_Lock->DrawText(tft, ButtonOn);
     }
     else
     {
-        b_Lock->DrawText(tft, "Lock", ButtonOff);
+        b_Lock->DrawText(tft, ButtonOff);
     }
 }
 void Display::ECUConnect(bool yes)
 {
     if (yes)
     {
-        b_ECU->DrawText(tft, "ECUo", ButtonOn);
+        b_ECU->DrawText(tft,  ButtonOn);
     }
     else
     {
-        b_ECU->DrawText(tft, "ECU", ButtonOff);
+        b_ECU->DrawText(tft, ButtonOff);
     }
 }
 void Display::speed(float act_speed)

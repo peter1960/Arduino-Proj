@@ -1,6 +1,6 @@
 #include <speed-box.h>
 
-pSpeedBox::pSpeedBox(int left, int top, int width, int height) : pBox(left, top, width, height, TFT_BLACK, TFT_BLACK)
+pSpeedBox::pSpeedBox(int left, int top, int width, int height) : pBox(left, top, width, height, TFT_BLACK, TFT_BLACK,"")
 {
 }
 
