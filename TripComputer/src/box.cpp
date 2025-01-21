@@ -10,6 +10,7 @@ pBox::pBox(int left, int top, int width, int height, int fill)
     this->fillon = fillon;
 }
 */
+
 pBox::pBox(int left, int top, int width, int height, int fillon, int filloff, const char *boxText)
 {
     this->width = width;

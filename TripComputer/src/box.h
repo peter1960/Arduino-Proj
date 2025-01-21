@@ -14,7 +14,8 @@ class pBox
 {
 public:
     // pBox(int left, int top, int width, int height, int fill);
-    pBox(int left, int top, int width, int height, int fillon, int filloff, const char *string);
+    pBox(int left, int top, int width, int height, int fillon, int filloff, const char *label);
+
     void DrawText(TFT_eSPI &tft, TriState BoxState);
     void TweekY(int);
 
@@ -24,6 +25,7 @@ protected:
     int top;
     int left;
     char p_boxText[16];
+    char p_boxLabel[6];
     virtual void Draw(TFT_eSPI &tft);
 
 

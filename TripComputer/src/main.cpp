@@ -33,7 +33,7 @@ void setup()
   TheGPS = new gps();
   // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
 
-  pinMode(BOARD_LED, OUTPUT);
+  //pinMode(BOARD_LED, OUTPUT);
   pinMode(REC_ON, INPUT);
   pinMode(ECU_ON, INPUT);
   pinMode(WIFI_ON, INPUT);
@@ -130,7 +130,8 @@ void loop()
 
   if (updateTime <= millis())
   {
-    updateTime = millis() + 2000;
+    updateTime = millis() + 1000;
+    if (ECU_MODE) {
     if (!connected)
     {
       //  Start KDS comms
@@ -142,15 +143,20 @@ void loop()
       //}
     }
     connected = keepAlive();
-
+    }
+    else {
+      if (connected) {
+        connected = !stopComm();
+      }
+    }
     if (connected)
     {
-      // dis->avg_speed(ECU_speed());
+      dis->ecu_speed(ECU_speed());
       dis->rpm(ECU_RPM());
     }
     else
     {
-      dis->avg_speed(-2);
+      dis->ecu_speed(-2);
       dis->rpm(-2);
     }
   }
@@ -171,34 +177,4 @@ void loop()
     }
   }
 
-  if (updateTime <= millis())
-  {
-    updateTime = millis() + 250; // Delay to limit speed of update
-
-    d += 4;
-    if (d >= 360)
-      d = 0;
-
-    // value[0] = map(analogRead(A0), 0, 1023, 0, 100); // Test with value form Analogue 0
-    // value[1] = map(analogRead(A1), 0, 1023, 0, 100); // Test with value form Analogue 1
-    // value[2] = map(analogRead(A2), 0, 1023, 0, 100); // Test with value form Analogue 2
-    // value[3] = map(analogRead(A3), 0, 1023, 0, 100); // Test with value form Analogue 3
-    // value[4] = map(analogRead(A4), 0, 1023, 0, 100); // Test with value form Analogue 4
-    // value[5] = map(analogRead(A5), 0, 1023, 0, 100); // Test with value form Analogue 5
-
-    // Create a Sine wave for testing
-    /*
-        value[1] = 9; // 50 + 50 * sin((d + 60) * 0.0174532925);
-        value[2] = 50 + 50 * sin((d + 120) * 0.0174532925);
-        value[3] = 50 + 50 * sin((d + 180) * 0.0174532925);
-        value[4] = 50 + 50 * sin((d + 240) * 0.0174532925);
-        value[5] = 50 + 50 * sin((d + 300) * 0.0174532925);
-    */
-    // unsigned long t = millis();
-    // dis->plotPointer(); // It takes aout 3.5ms to plot each gauge for a 1 pixel move, 21ms for 6 gauges
-
-    // dis.plotSpeed(value[0], 0); // It takes between 2 and 12ms to replot the needle with zero delay
-    //  Serial.println(millis()-t); // Print time taken for meter update
-  }
-  // put your main code here, to run repeatedly:
 }

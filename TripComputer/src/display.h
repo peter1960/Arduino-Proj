@@ -55,9 +55,9 @@ private:
     pBox *b_Lock;
     pBox *b_IP;
     pBox *b_ECU;
-    pSpeedBox *b_Speed;
-    pSpeedBox *b_Average;
-    pSpeedBox *b_RPM;
+    pSpeedBox *b_GPSSpeed;
+    pSpeedBox *b_ECUkmh;
+    pSpeedBox *b_ECURPM;
 
 public:
     Display(void);
@@ -72,7 +72,7 @@ public:
     void Wifi(bool yes);
     void ipAdress(const char *ip);
     void speed(float);
-    void avg_speed(float);
+    void ecu_speed(float);
     void HasLock(bool yes);
     void ECUConnect(bool yes);
     void Rec(bool yes);

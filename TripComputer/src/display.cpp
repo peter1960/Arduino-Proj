@@ -16,9 +16,9 @@ Display::Display()
     b_ECU = new pBox(BX + BWIDE + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"ECU");
     b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK,"IP");
     b_IP->TweekY(-3);
-    b_Speed = new pSpeedBox(SX, SY, SWIDE, SHIGH);
-    b_Average = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH);
-    b_RPM = new pSpeedBox(SX, SY + SHIGH + SHIGH, SWIDE, SHIGH);
+    b_GPSSpeed = new pSpeedBox(SX, SY, SWIDE, SHIGH,"g-kmh");
+    b_ECUkmh = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH,"kmh");
+    b_ECURPM = new pSpeedBox(SX, SY + SHIGH + SHIGH, SWIDE, SHIGH,"rpm");
 }
 void Display::plotSpeed(int value, byte ms_delay)
 {
@@ -103,9 +103,9 @@ void Display::screenLayout()
     Rec(false);
     HasLock(false);
     ECUConnect(false);
-    b_Speed->Draw(tft);
-    b_Average->Draw(tft);
-    b_RPM->Draw(tft);
+    b_GPSSpeed->Draw(tft);
+    b_ECUkmh->Draw(tft);
+    b_ECURPM->Draw(tft);
 }
 void Display::Wifi(bool yes)
 {
@@ -157,15 +157,15 @@ void Display::ECUConnect(bool yes)
 }
 void Display::speed(float act_speed)
 {
-    b_Speed->Speed(tft, act_speed);
+    b_GPSSpeed->Speed(tft, act_speed);
 }
-void Display::avg_speed(float avg_speed)
+void Display::ecu_speed(float avg_speed)
 {
-    b_Average->Speed(tft, avg_speed);
+    b_ECUkmh->Speed(tft, avg_speed);
 }
 void Display::rpm(float rpm)
 {
-    b_RPM->Speed(tft, rpm);
+    b_ECURPM->Speed(tft, rpm);
 }
 
 
