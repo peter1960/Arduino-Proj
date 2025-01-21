@@ -12,9 +12,9 @@ const uint8_t validRegs[] = {0x00, 0x01, 0x02, 0x04, 0x05, 0x06, 0x07, 0x08,
                              0x6F, 0x80, 0x9B, 0xA0, 0xB4};
 
 const uint8_t numValidRegs = (uint8_t)(sizeof(validRegs));
-bool ECU_initPulse();
-uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, uint8_t maxLen);
-uint8_t ECU_calcChecksum(uint8_t *data, uint8_t len);
-float ECU_speed();
+bool xECU_initPulse();
+uint8_t xECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, uint8_t maxLen);
+uint8_t xECU_calcChecksum(uint8_t *data, uint8_t len);
+float xECU_speed();
 float xECU_RPM();
-bool ECU_alive();
+bool xECU_alive();

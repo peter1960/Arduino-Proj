@@ -13,7 +13,7 @@ bool ECU_alive()
   uint8_t resp[5];
   req[0] = 0x21;
   req[1] = 0x0B;
-  rLen = ECU_sendRequest(req, resp, 2, 3);
+  rLen = xECU_sendRequest(req, resp, 2, 3);
   /*
   Serial.print("Bytes Reply");
   Serial.print(rLen);
@@ -41,7 +41,7 @@ float xECU_RPM()
   uint8_t resp[4];
   req[0] = 0x21;
   req[1] = 0x09;
-  rLen = ECU_sendRequest(req, resp, 2, 4);
+  rLen = xECU_sendRequest(req, resp, 2, 4);
   float _speed = ((resp[0] * 100) + resp[1]);
   Serial.print("RPM Ask - > Len ");
   Serial.print(rLen);
@@ -61,14 +61,14 @@ float xECU_RPM()
   Serial.println(_speed);
   return _speed;
 }
-float ECU_speed()
+float xECU_speed()
 {
   uint8_t rLen;
   uint8_t req[2];
   uint8_t resp[5];
   req[0] = 0x21;
   req[1] = 0x0C;
-  rLen = ECU_sendRequest(req, resp, 2, 3);
+  rLen = xECU_sendRequest(req, resp, 2, 3);
   float _speed = 100.0;
   return _speed;
 }
@@ -94,7 +94,7 @@ bool ECU_initPulse()
   xcpuSerial.begin(CPUBPS, SWSERIAL_8N1, K_IN, K_OUT, false);
   // Start Communication is a single byte "0x81" packet.
   req[0] = 0x81;
-  rLen = ECU_sendRequest(req, resp, 1, 3);
+  rLen = xECU_sendRequest(req, resp, 1, 3);
 
   delay(ISORequestDelay);
   // Response should be 3 bytes: 0xC1 0xEA 0x8F
@@ -104,7 +104,7 @@ bool ECU_initPulse()
     // 2 bytes: 0x10 0x80
     req[0] = 0x10;
     req[1] = 0x80;
-    rLen = ECU_sendRequest(req, resp, 2, 3);
+    rLen = xECU_sendRequest(req, resp, 2, 3);
 
     // OK Response should be 2 bytes: 0x50 0x80
     if ((rLen == 2) && (resp[0] == 0x50) && (resp[1] == 0x80))
@@ -163,7 +163,7 @@ uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLe
   if (reqLen == 1)
   {
     buf[3] = request[0];
-    buf[4] = ECU_calcChecksum(buf, 4);
+    buf[4] = xECU_calcChecksum(buf, 4);
     bytesToSend = 5;
   }
   else
@@ -173,7 +173,7 @@ uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLe
     {
       buf[4 + z] = request[z];
     }
-    buf[4 + z] = ECU_calcChecksum(buf, 4 + z);
+    buf[4 + z] = xECU_calcChecksum(buf, 4 + z);
     bytesToSend = 5 + z;
   }
 
@@ -259,7 +259,7 @@ uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLe
           if (forMe)
           {
             // Only check the checksum if it was for us - don't care otherwise!
-            if (ECU_calcChecksum(rbuf, rCnt) == rbuf[rCnt])
+            if (xECU_calcChecksum(rbuf, rCnt) == rbuf[rCnt])
             {
               // Checksum OK.
               return (bytesRcvd);
