@@ -1,7 +1,11 @@
 #include <speed-box.h>
 
-pSpeedBox::pSpeedBox(int left, int top, int width, int height) : pBox(left, top, width, height, TFT_BLACK, TFT_BLACK,"")
+pSpeedBox::pSpeedBox(int left, int top, int width, int height, const char *boxLabel) : pBox(left, top, width, height, TFT_BLACK, TFT_BLACK, "")
 {
+    int l = strlen(boxLabel);
+    strncpy(p_boxLabel, boxLabel, l);
+    // terminate the string
+    p_boxLabel[l] = '\0';
 }
 
 void pSpeedBox::Draw(TFT_eSPI &tft)
@@ -25,5 +29,6 @@ void pSpeedBox::Speed(TFT_eSPI &tft, float speed)
         sprintf(buffer, "%.0f", last_speed);
         tft.setTextColor(TFT_GREEN);
         tft.drawRightString(buffer, left + width - 5, top + (height / 4), 7);
+        tft.drawString(p_boxLabel, left + 2, top + 1, 2);
     }
 }
