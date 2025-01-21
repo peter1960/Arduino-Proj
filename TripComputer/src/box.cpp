@@ -33,12 +33,15 @@ bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
 {
     if (lastBoxState != BoxState && BoxState == ButtonOn)
     {
+        Serial.println("Box Redraw On");
+
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, fillon);
         lastBoxState = ButtonOn;
         return true;
     }
     else if (lastBoxState != BoxState && BoxState == ButtonOff)
     {
+        Serial.println("Box Redraw Off");
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, filloff);
         lastBoxState = ButtonOff;
         return true;
@@ -48,19 +51,25 @@ bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
 
 void pBox::DrawText(TFT_eSPI &tft, const char *string, TriState BoxState)
 {
+    //Serial.print("New ");
+    //Serial.print(string);
+    //Serial.print(" Old ");
+    //Serial.println(lastText);
     /* Need to redraw if color changed or text*/
     if (FillRect(tft, BoxState) || strncmp(lastText, string, 16) != 0)
     {
-        Serial.println("State Change");
+        //Serial.println("State Change");
         if (BoxState == ButtonOn)
         {
             tft.setTextColor(TFT_BLACK); // On Text colour
-            Serial.println("On Text");
+           // Serial.print(string);
+            //Serial.println(" On Text");
         }
         else
         {
             tft.setTextColor(TFT_WHITE); // Off Text colour
-            Serial.println("Off Text");
+            //Serial.print(string);
+           // Serial.println("Off Text");
         }
         if (yTweek < 999)
         {

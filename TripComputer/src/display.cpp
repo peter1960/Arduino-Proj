@@ -93,7 +93,6 @@ void Display::DisplayTime(const char *time)
     tft.drawString(time, 10, 135, 2);
     xx = time;
 }
-
 void Display::DisplayStat(int sat)
 {
     value[SAT_COUNT] = sat;
@@ -101,25 +100,28 @@ void Display::DisplayStat(int sat)
 void Display::screenLayout()
 {
     b_Wifi->Draw(tft);
-    WiFiOff();
+    Wifi(false);
     b_Rec->Draw(tft);
     Rec(false);
     b_Lock->Draw(tft);
-    b_Lock->DrawText(tft, "Lock", ButtonOff);
+    HasLock(false);
     b_ECU->Draw(tft);
-    b_ECU->DrawText(tft, "ECU", ButtonOff);
+    ECUConnect(false);
     b_IP->Draw(tft);
     b_Speed->Draw(tft);
     b_Average->Draw(tft);
     b_RPM->Draw(tft);
 }
-void Display::WiFiOn()
+void Display::Wifi(bool yes)
 {
+    if (yes)
+    {
     b_Wifi->DrawText(tft, "Wifi", ButtonOn);
-}
-void Display::WiFiOff()
-{
+    }
+    else
+    {
     b_Wifi->DrawText(tft, "Wifi", ButtonOff);
+    }
 }
 void Display::Rec(bool yes)
 {
@@ -147,7 +149,6 @@ void Display::HasLock(bool yes)
         b_Lock->DrawText(tft, "Lock", ButtonOff);
     }
 }
-
 void Display::ECUConnect(bool yes)
 {
     if (yes)
@@ -159,7 +160,6 @@ void Display::ECUConnect(bool yes)
         b_ECU->DrawText(tft, "ECU", ButtonOff);
     }
 }
-
 void Display::speed(float act_speed)
 {
     b_Speed->Speed(tft, act_speed);

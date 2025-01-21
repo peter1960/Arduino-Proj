@@ -5,7 +5,7 @@
 #include <def.h>
 #include <serial.h>
 #include <gps.h>
-#include <kawa.h>
+#include <kline.h>
 #include <wifi-mqtt.h>
 #include <mysecrets.h>
 
@@ -34,7 +34,9 @@ void setup()
   // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
 
   pinMode(BOARD_LED, OUTPUT);
-  pinMode(REC_ON, INPUT_PULLUP);
+  pinMode(REC_ON, INPUT);
+  pinMode(ECU_ON, INPUT);
+  pinMode(WIFI_ON, INPUT);
 
 #ifdef PL_DEBUG
 
@@ -62,9 +64,9 @@ void setup()
   //  plotLinear("A3", 3 * d, 160);
   //  plotLinear("A4", 4 * d, 160);
   //  plotLinear("A5", 5 * d, 160);
-  dis->WiFiOff();
+  //dis->WiFiOff();
   StartWifi();
-  dis->WiFiOn();
+  //dis->WiFiOn();
 
   OTAsetup();
   updateTime = millis(); // Next update time
@@ -81,48 +83,57 @@ void setup()
 #endif
 }
 
-bool ECUconnected = false;
+bool connected = false;
 bool LastECU = true;
 bool REC_MODE = false;
+bool ECU_MODE = false;
+bool WIFI_MODE = false;
+
 void loop()
 {
+  OTAcheck();
+  /*
+  Get the switch status
+  and set the display
+    */
   REC_MODE = digitalRead(REC_ON);
   dis->Rec(REC_MODE);
+  ECU_MODE = digitalRead(ECU_ON);
+  dis->ECUConnect(ECU_MODE);
+  WIFI_MODE = digitalRead(WIFI_ON);
+  dis->Wifi(ECU_MODE);
 
-  dis->ipAdress(WiFi.localIP().toString().c_str());
-  OTAcheck();
+  // dis->ipAdress(WiFi.localIP().toString().c_str());
   dis->HasLock(TheGPS->HasLock());
   dis->speed(TheGPS->Speed());
 
-  if (!ECUconnected)
+  if (updateTime <= millis())
   {
-    //  Start KDS comms
-    if (updateTime <= millis())
+    updateTime = millis() + 2000;
+    if (!connected)
     {
-      ECUconnected = ECU_initPulse();
+      //  Start KDS comms
+      // if (updateTime <= millis())
+      //{
       Serial.print(millis());
-      Serial.println(" Start ECU");
+      Serial.println(" Try Start ECU");
+      connected = fastInit();
+      //}
     }
-  }
-  ECUconnected = ECU_alive();
-  dis->ECUConnect(ECUconnected);
+    connected = keepAlive();
+    dis->ECUConnect(connected);
 
-  if (ECUconnected)
-  {
+    if (connected)
     {
-      if (updateTime <= millis())
-      {
-      }
-      dis->avg_speed(ECU_speed());
+      // dis->avg_speed(ECU_speed());
       dis->rpm(ECU_RPM());
-      updateTime = millis() + 1000;
+    }
+    else
+    {
+      dis->avg_speed(-2);
+      dis->rpm(-2);
     }
   }
-  else {
-    dis->avg_speed(-2);
-    dis->rpm(-2);
-  }
-
   uint8_t c,
       cc;
 

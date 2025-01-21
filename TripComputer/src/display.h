@@ -19,7 +19,7 @@
 // Speed Box
 #define SX 0
 #define SY 1
-#define SWIDE 140
+#define SWIDE 150
 #define SHIGH 80
 
 // linear bar sizes
@@ -69,8 +69,7 @@ public:
     void DisplayTime(const char *time);
     void screenLayout();
     void DisplayStat(int sat);
-    void WiFiOn();
-    void WiFiOff();
+    void Wifi(bool yes);
     void ipAdress(const char *ip);
     void speed(float);
     void avg_speed(float);
