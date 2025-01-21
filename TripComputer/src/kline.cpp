@@ -25,6 +25,42 @@ int16_t ECU_RPM()
     uint8_t req[2];
     uint8_t resp[4];
     req[0] = 0x21;
+    req[1] = 0x0C  ;
+    rLen = sendRequest(req, resp, 2, 4);
+    float _speed = ((resp[2] * 100) + resp[3]);
+    
+    Serial.print("Speed Ask - > Len ");
+    Serial.print(rLen);
+    Serial.print(" ");
+    
+    if (rLen == 0){
+        ECUconnected = false;
+        return -2;
+    }
+    
+    Serial.print(resp[0]);
+    Serial.print(" ");
+    Serial.print(resp[1]);
+    Serial.print(" ");
+    Serial.print(resp[2]);
+    Serial.print(" ");
+    if (rLen > 3)
+    {
+        Serial.print(resp[3]);
+        Serial.print(" ");
+    }
+    Serial.print(" Calculated: ");
+    Serial.println(_speed);
+    
+    return _speed;
+}
+
+int16_t ECU_speed()
+{
+    uint8_t rLen;
+    uint8_t req[2];
+    uint8_t resp[4];
+    req[0] = 0x21;
     req[1] = 0x09;
     rLen = sendRequest(req, resp, 2, 4);
     float _speed = ((resp[2] * 100) + resp[3]);
@@ -54,6 +90,7 @@ int16_t ECU_RPM()
     */
     return _speed;
 }
+
 
 bool fastInit()
 {
@@ -124,7 +161,6 @@ bool stopComm()
     format = 0x80;
     req[0] = 0x82;
     rLen = sendRequest(req, resp, 1, 3);
-    digitalWrite(BOARD_LED, LOW);
     ECUconnected = false;
     return true;
 }
@@ -365,7 +401,6 @@ uint8_t calcChecksum(uint8_t *data, uint8_t len)
 void ErrorAppeard()
 {
     ECUconnected = false;
-    digitalWrite(BOARD_LED, LOW);
     // ECU ignores requests for 2 seconds, after error appeard
     delay(2000);
 }
