@@ -2,28 +2,63 @@
 #include <def.h>
 #include <kawa.h>
 #include "SoftwareSerial.h"
-
-EspSoftwareSerial::UART cpuSerial;
+#include <serial.h>
+EspSoftwareSerial::UART xcpuSerial;
 constexpr uint32_t CPUBPS = 10400;
 
-bool ECU_alive() {
+bool ECU_alive()
+{
   uint8_t rLen;
   uint8_t req[2];
   uint8_t resp[5];
   req[0] = 0x21;
   req[1] = 0x0B;
   rLen = ECU_sendRequest(req, resp, 2, 3);
+  /*
+  Serial.print("Bytes Reply");
+  Serial.print(rLen);
+  Serial.print(" ");
+  Serial.print(resp[0]);
+  Serial.print(" ");
+  Serial.print(resp[1]);
+  Serial.print(" ");
+  Serial.print(resp[2]);
+  Serial.print(" ");
+  */
+  Serial.println(" See if ECU connected");
+  
+  if (resp[0] == 0x7f && resp[1] == 0x21 && resp[2] == 0x10)
+  {
+    Serial.println(" Error from ECU");
+    return false;
+  }
   return rLen > 0;
-
 }
-float ECU_RPM(){
+float xECU_RPM()
+{
   uint8_t rLen;
   uint8_t req[2];
-  uint8_t resp[5];
+  uint8_t resp[4];
   req[0] = 0x21;
   req[1] = 0x09;
-  rLen = ECU_sendRequest(req, resp, 2, 3);
-  float _speed = ((req[2] *256) + req[3]);
+  rLen = ECU_sendRequest(req, resp, 2, 4);
+  float _speed = ((resp[0] * 100) + resp[1]);
+  Serial.print("RPM Ask - > Len ");
+  Serial.print(rLen);
+  Serial.print(" ");
+  Serial.print(resp[0]);
+  Serial.print(" ");
+  Serial.print(resp[1]);
+  Serial.print(" ");
+  Serial.print(resp[2]);
+  Serial.print(" ");
+  if (rLen > 3)
+  {
+    Serial.print(resp[3]);
+    Serial.print(" ");
+  }
+  Serial.print(" Calculated: ");
+  Serial.println(_speed);
   return _speed;
 }
 float ECU_speed()
@@ -43,7 +78,7 @@ bool ECU_initPulse()
   uint8_t req[2];
   uint8_t resp[3];
 
-  cpuSerial.end();
+  xcpuSerial.end();
   // pinMode(K_OUT, OUTPUT);
 
   // This is the ISO 14230-2 "Fast Init" sequence.
@@ -56,7 +91,7 @@ bool ECU_initPulse()
   delay(25);
 
   // Serial.begin(10400);
-  cpuSerial.begin(CPUBPS, SWSERIAL_8N1, K_IN, K_OUT, false);
+  xcpuSerial.begin(CPUBPS, SWSERIAL_8N1, K_IN, K_OUT, false);
   // Start Communication is a single byte "0x81" packet.
   req[0] = 0x81;
   rLen = ECU_sendRequest(req, resp, 1, 3);
@@ -74,6 +109,7 @@ bool ECU_initPulse()
     // OK Response should be 2 bytes: 0x50 0x80
     if ((rLen == 2) && (resp[0] == 0x50) && (resp[1] == 0x80))
     {
+      Serial.println("Good Reply");
       return true;
     }
   }
@@ -144,7 +180,7 @@ uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLe
   // Now send the command...
   for (uint8_t i = 0; i < bytesToSend; i++)
   {
-    bytesSent += cpuSerial.write(buf[i]);
+    bytesSent += xcpuSerial.write(buf[i]);
     delay(ISORequestByteDelay);
   }
 
@@ -157,9 +193,9 @@ uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLe
   // Wait for and deal with the reply
   while ((bytesRcvd <= maxLen) && ((millis() - startTime) < MAXSENDTIME))
   {
-    if (cpuSerial.available())
+    if (xcpuSerial.available())
     {
-      c = cpuSerial.read();
+      c = xcpuSerial.read();
       startTime = millis(); // reset the timer on each byte received
 
       // PLdelayLeds(ISORequestByteDelay, true);

@@ -16,5 +16,5 @@ bool ECU_initPulse();
 uint8_t ECU_sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, uint8_t maxLen);
 uint8_t ECU_calcChecksum(uint8_t *data, uint8_t len);
 float ECU_speed();
-float ECU_RPM();
+float xECU_RPM();
 bool ECU_alive();
