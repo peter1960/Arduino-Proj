@@ -155,13 +155,13 @@ void Display::ECUConnect(bool yes)
         b_ECU->DrawText(tft, ButtonOff);
     }
 }
-void Display::speed(float act_speed)
+void Display::speed(float gps_speed)
 {
-    b_GPSSpeed->Speed(tft, act_speed);
+    b_GPSSpeed->Speed(tft, gps_speed);
 }
-void Display::ecu_speed(float avg_speed)
+void Display::ecu_speed(float ecu_speed)
 {
-    b_ECUkmh->Speed(tft, avg_speed);
+    b_ECUkmh->Speed(tft, ecu_speed);
 }
 void Display::rpm(float rpm)
 {
