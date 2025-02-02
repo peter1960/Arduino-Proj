@@ -3,7 +3,6 @@
 #include <TFT_eSPI.h>
 #include <SPI.h>
 #include <def.h>
-#include <serial.h>
 #include <gps.h>
 #include <kline.h>
 #include <wifi-mqtt.h>
@@ -25,11 +24,11 @@ int d = 0;
 
 void setup()
 {
-#ifdef PL_DEBUG_GPS
+#ifdef PL_DEBUG_GPS || PL_DEBUG_DISPLAY
 
   Serial.begin(115200);
 #endif
-  Serial.begin(115200);
+
   dis = new Display();
   TheGPS = new gps();
   // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
@@ -39,7 +38,7 @@ void setup()
   pinMode(ECU_ON, INPUT);
   pinMode(WIFI_ON, INPUT);
 
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS || PL_DEBUG_DISPLAY
 
   Serial.println("");
   Serial.println("Serial Txd is on pin: " + String(TXD2));

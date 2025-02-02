@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "def.h"
-#include <serial.h>
 #include "SoftwareSerial.h"
 // #include "serial.h"
 #include "gps.h"
@@ -59,22 +58,28 @@ float gps::Speed()
   }
   return -2.0;
 }
-void gps::Serial2GpsPrint(const char PROGMEM *str)
+
+void gps::SerialGpsPrint(const char *str)
+{
+}
+void gps::SerialGpsPrintPROGMEM(const char PROGMEM *str)
 {
   char b;
   while (str && (b = pgm_read_byte(str++)))
   {
     // Serial2WriteGPS(b);
     gpsSerial.write(b);
-    //gpsSerial.flush();
+    Serial.print(b);
+    gpsSerial.flush();
     delay(5);
   }
+    Serial.println("-------------");
 }
 
 void gps::GPS_Serial2Init(void)
 {
-  //SerialOpen(GPS_SERIAL, GPS_BAUD);
-  
+  // gpsSerial.begin(GPS_SERIAL, GPS_BAUD);
+
 #ifdef PL_DEBUG_GPS
   Serial.print("Start GPS INIT\n");
 #endif
@@ -83,26 +88,28 @@ void gps::GPS_Serial2Init(void)
   {
     // SerialWriteString(MON_SERIAL, "Speed\n");
 #ifdef PL_DEBUG_GPS
-      Serial.print("Try ");
-      Serial.println(init_speed[i]);
+    Serial.print("Try ");
+    Serial.println(init_speed[i]);
 #endif
 
     // Serial2Open(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
-    gpsSerial.begin(init_speed[i], SWSERIAL_8N1, RXD2, TXD2, false);
+    gpsSerial.begin(init_speed[i], SWSERIAL_8N1, RXD2, TXD2, false, 500);
+    Serial.println(gpsSerial.baudRate());
+    gpsSerial.flush();
 #if (GPS_BAUD == 9600)
-    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,9600,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
+    SerialGpsPrintPROGMEM(PSTR("$PUBX,41,1,0003,0001,9600,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
 #endif
 #if (GPS_BAUD == 19200)
-    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,19200,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
+    SerialGpsPrintPROGMEM(PSTR("$PUBX,41,1,0003,0001,19200,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
 #endif
 #if (GPS_BAUD == 38400)
-    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,38400,0*26\r\n")); // 38400 baud
+    SerialGpsPrintPROGMEM(PSTR("$PUBX,41,1,0003,0001,38400,0*26\r\n")); // 38400 baud
 #endif
 #if (GPS_BAUD == 57600)
-    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,57600,0*2D\r\n")); // 57600 baud
+    SerialGpsPrintPROGMEM(PSTR("$PUBX,41,1,0003,0001,57600,0*2D\r\n")); // 57600 baud
 #endif
 #if (GPS_BAUD == 115200)
-    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,115200,0*1E\r\n")); // 115200 baud
+    SerialGpsPrintPROGMEM(PSTR("$PUBX,41,1,0003,0001,115200,0*1E\r\n")); // 115200 baud
 #endif
     while (!gpsSerial.availableForWrite())
     {
@@ -111,6 +118,9 @@ void gps::GPS_Serial2Init(void)
       Serial.print("X");
 #endif
     }
+
+    delay(1000);
+
 #ifdef PL_DEBUG_GPS
     Serial.print("Buffer empty\n");
 #endif
@@ -119,7 +129,8 @@ void gps::GPS_Serial2Init(void)
   }
   delay(500);
   // Serial2Open(GPS_BAUD);
-  gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, RXD2, TXD2, false);
+  gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, RXD2, TXD2, false, 500);
+    Serial.println(gpsSerial.baudRate());
 
 #ifdef PL_DEBUG_GPS
   Serial.print(String(__LINE__));
@@ -129,8 +140,8 @@ void gps::GPS_Serial2Init(void)
   { // send configuration data in UBX protocol
     // Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
     gpsSerial.write(pgm_read_byte(UBLOX_INIT + i));
-    //gpsSerial.flush();
-    delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
+    // gpsSerial.flush();
+    delay(20); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
 #ifdef PL_DEBUG_GPS
   Serial.print(String(__LINE__));
@@ -209,7 +220,6 @@ bool gps::GPS_newFrame(uint8_t data)
       Serial.print(" data ");
       Serial.println(data);
     }
-
   }
   if (st == 1)
   {

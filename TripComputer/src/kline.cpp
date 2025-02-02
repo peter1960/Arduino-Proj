@@ -1,7 +1,6 @@
 #include <arduino.h>
 #include <def.h>
 #include "SoftwareSerial.h"
-#include <serial.h>
 #include <kline.h>
 
 uint8_t format = 0x81;

@@ -15,7 +15,8 @@ public:
     uint8_t ReadByte();
 
 private:
-    void Serial2GpsPrint(const char PROGMEM *str);
+    void SerialGpsPrintPROGMEM(const char PROGMEM *str);
+    void SerialGpsPrint(const char *str);
     uint16_t grab_fields(char *src, uint8_t mult);
     uint8_t _step = 0; // State machine state
     uint8_t _msg_id;

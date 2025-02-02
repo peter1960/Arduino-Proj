@@ -2,7 +2,6 @@
 #include <def.h>
 #include <kawa.h>
 #include "SoftwareSerial.h"
-#include <serial.h>
 EspSoftwareSerial::UART xcpuSerial;
 constexpr uint32_t CPUBPS = 10400;
 
