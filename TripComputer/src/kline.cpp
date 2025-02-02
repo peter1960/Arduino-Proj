@@ -15,7 +15,7 @@ const uint8_t ECUaddr = 0x11;
 const uint8_t MyAddr = 0xF1;
 #define MAXSENDTIME 2000 // 2 second timeout on KDS comms.
 
-EspSoftwareSerial::UART cpuSerial;
+//XXEspSoftwareSerial::UART cpuSerial;
 constexpr uint32_t CPUBPS = 10400;
 char gear = 'N';
 
@@ -95,12 +95,14 @@ int16_t ECU_speed()
 
 bool fastInit()
 {
+    
     uint8_t rLen;
     uint8_t req[2];
     uint8_t resp[3];
 
+/*PL
     cpuSerial.end();
-
+*/
     // This is the ISO 14230-2 "Fast Init" sequence.
     digitalWrite(K_OUT, HIGH);
     delay(300);
@@ -109,8 +111,9 @@ bool fastInit()
     digitalWrite(K_OUT, HIGH);
     delay(25);
     // Should be 10417
+/*PL    
     cpuSerial.begin(CPUBPS, SWSERIAL_8N1, K_IN, K_OUT, false);
-
+*/
     // Start Communication is a single byte "0x81" packet.
     // 81 means Format without Header Information (Sender / Receiver)
     format = 0x81;
@@ -269,7 +272,9 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
     // Now send the command...
     for (uint8_t i = 0; i < bytesToSend; i++)
     {
+        /*PL
         bytesSent += cpuSerial.write(buf[i]);
+        */
         delay(ISORequestByteDelay);
     }
     // Wait required time for response.
@@ -281,9 +286,13 @@ uint8_t sendRequest(const uint8_t *request, uint8_t *response, uint8_t reqLen, u
     // Wait for and deal with the reply
     while ((bytesRcvd <= maxLen) && ((millis() - startTime) < MAXSENDTIME))
     {
+        /*PL
         if (cpuSerial.available())
+        */
         {
+            /*PL
             c = cpuSerial.read();
+            */
             startTime = millis(); // reset the timer on each byte received
 
             // delayLeds(ISORequestByteDelay, true);

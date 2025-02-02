@@ -25,7 +25,8 @@ int d = 0;
 
 void setup()
 {
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
+
   Serial.begin(115200);
 #endif
   Serial.begin(115200);
@@ -33,7 +34,7 @@ void setup()
   TheGPS = new gps();
   // Serial.println("TFT_BL is on pin: " + String(TFT_BL));
 
-  //pinMode(BOARD_LED, OUTPUT);
+  // pinMode(BOARD_LED, OUTPUT);
   pinMode(REC_ON, INPUT);
   pinMode(ECU_ON, INPUT);
   pinMode(WIFI_ON, INPUT);
@@ -51,11 +52,14 @@ void setup()
 
 #endif
 
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_DISPLAY
   Serial.println("Setup Display");
 #endif
 
   dis->screenLayout();
+#ifdef PL_DEBUG_DISPLAY
+  Serial.println("Display Done");
+#endif
   // dis->analogMeter(); // Draw analogue meter
 
   // dis.plotLinearSat("Sat");
@@ -70,17 +74,6 @@ void setup()
 
   OTAsetup();
   updateTime = millis(); // Next update time
-
-#ifdef PL_DEBUG
-  Serial.println("Display Done");
-  Serial.println("Setup GPS");
-#endif
-
-  // GPS_Serial2Init();
-
-#ifdef PL_DEBUG
-  Serial.println("GPS Done");
-#endif
 }
 
 bool connected = false;
@@ -109,18 +102,18 @@ void loop()
     if (ecuFlashTime <= millis())
     {
       ecuFlashTime = millis() + 500;
-      ecuToggle = ! ecuToggle;
+      ecuToggle = !ecuToggle;
       dis->ECUConnect(ecuToggle);
     }
   }
-  else if (ECU_MODE){
-      dis->ECUConnect(true);
-
-   }
-   else if (!ECU_MODE){
-      dis->ECUConnect(false);
-
-   }
+  else if (ECU_MODE)
+  {
+    dis->ECUConnect(true);
+  }
+  else if (!ECU_MODE)
+  {
+    dis->ECUConnect(false);
+  }
   WIFI_MODE = digitalRead(WIFI_ON);
   dis->Wifi(WIFI_MODE);
 
@@ -131,28 +124,33 @@ void loop()
   if (updateTime <= millis())
   {
     updateTime = millis() + 1000;
-    if (ECU_MODE) {
-    if (!connected)
+    if (ECU_MODE)
     {
-      //  Start KDS comms
-      // if (updateTime <= millis())
-      //{
-      Serial.print(millis());
-      Serial.println(" Try Start ECU");
-      connected = fastInit();
-      //}
+      if (!connected)
+      {
+        //  Start KDS comms
+        // if (updateTime <= millis())
+        //{
+        Serial.print(millis());
+        Serial.println(" Try Start ECU");
+        connected = fastInit();
+        //}
+      }
+      connected = keepAlive();
     }
-    connected = keepAlive();
-    }
-    else {
-      if (connected) {
+    else
+    {
+      if (connected)
+      {
         connected = !stopComm();
       }
     }
     if (connected)
     {
+      /*PL
       dis->ecu_speed(ECU_speed());
       dis->rpm(ECU_RPM());
+      */
     }
     else
     {
@@ -160,21 +158,16 @@ void loop()
       dis->rpm(-2);
     }
   }
-  uint8_t c,
-      cc;
 
   while (TheGPS->SerialAvailable())
   {
-    int inByte = TheGPS->ReadByte(); // SerialRead(GPS_SERIAL);
-#ifdef PL_DEBUG
-    Serial.print(String(inByte));
-#endif
+    uint8_t inByte = TheGPS->ReadByte(); // SerialRead(GPS_SERIAL);
     if (TheGPS->GPS_newFrame(inByte))
     {
-#ifdef PL_DEBUG
-      Serial.print("\n");
+#ifdef PL_DEBUG_GPS
+     Serial.print(String(inByte));
+      // Serial.print("\n");
 #endif
     }
   }
-
 }

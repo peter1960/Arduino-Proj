@@ -39,17 +39,22 @@ bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
     tft.drawRect(left, top, width, height, TFT_WHITE); // Draw bezel line
     if (lastBoxState != BoxState && BoxState == ButtonOn)
     {
+#ifdef PL_DEBUG_DISPLAY
+
         Serial.print(p_boxText);
         Serial.println(" Box Redraw On");
-
+#endif
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, fillon);
         lastBoxState = ButtonOn;
         return true;
     }
     else if (lastBoxState != BoxState && BoxState == ButtonOff)
     {
+#ifdef PL_DEBUG_DISPLAY
         Serial.print(p_boxText);
         Serial.println(" Box Redraw Off");
+#endif
+
         tft.fillRect(left + 1, top + 1, width - 2, height - 2, filloff);
         lastBoxState = ButtonOff;
         return true;
@@ -69,12 +74,18 @@ void pBox::DrawText(TFT_eSPI &tft, TriState BoxState)
         // Serial.println("State Change");
         if (BoxState == ButtonOn)
         {
+#ifdef PL_DEBUG_DISPLAY
             Serial.println("Text On");
+#endif
+
             tft.setTextColor(TFT_BLACK); // On Text colour
         }
         else
         {
+#ifdef PL_DEBUG_DISPLAY
             Serial.println("Text Off");
+#endif
+
             tft.setTextColor(TFT_WHITE); // Off Text colour
         }
         if (yTweek < 999)

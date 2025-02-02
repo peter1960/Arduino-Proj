@@ -33,7 +33,7 @@ bool lBuffferIsEmpty = false;
 bool Serial2TXfree()
 {
     /*
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
     if (!lBuffferIsEmpty)
     {
         log_d("Test");

@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "def.h"
+#include <serial.h>
 #include "SoftwareSerial.h"
 // #include "serial.h"
 #include "gps.h"
@@ -7,7 +8,6 @@
 #define SPEEDS 5
 
 EspSoftwareSerial::UART gpsSerial;
-constexpr uint32_t TESTBPS = 74880;
 
 flags_struct_t fc;
 uint32_t init_speed[SPEEDS] = {9600, 19200, 38400, 57600, 115200};
@@ -22,18 +22,33 @@ unsigned long last_seconds;
 
 uint16_t grab_fields(char *src, uint8_t mult);
 uint8_t hex_c(uint8_t n);
-
+#ifdef PL_DEBUG_GPS
+uint32_t display_lock = 0;
+#endif
 gps::gps()
 {
   for (int x = 0; x < SPEED_SAMPLES; x++)
   {
     avg_GPS_speed[x] = 0;
   }
+#ifdef PL_DEBUG_GPS
+  Serial.println("GPS Setup Start =================");
+#endif
   GPS_Serial2Init();
+#ifdef PL_DEBUG_GPS
+  Serial.println("GPS Done =====================");
+#endif
 }
 
 bool gps::HasLock()
 {
+#ifdef PL_DEBUG_GPS
+  if (display_lock < millis())
+  {
+    Serial.println("Check Lock");
+    display_lock = millis() + 10000;
+  }
+#endif
   return fc.GPS_FIX == 1;
 }
 float gps::Speed()
@@ -42,58 +57,61 @@ float gps::Speed()
   {
     return GPS_speed;
   }
-  return 0.0;
+  return -2.0;
 }
 void gps::Serial2GpsPrint(const char PROGMEM *str)
 {
   char b;
   while (str && (b = pgm_read_byte(str++)))
   {
-    //Serial2WriteGPS(b);
+    // Serial2WriteGPS(b);
     gpsSerial.write(b);
-    gpsSerial.flush();
+    //gpsSerial.flush();
     delay(5);
   }
 }
 
 void gps::GPS_Serial2Init(void)
 {
-  // SerialOpen(GPS_SERIAL, GPS_BAUD);
-  // delay(1000);
-#ifdef PL_DEBUG
+  //SerialOpen(GPS_SERIAL, GPS_BAUD);
+  
+#ifdef PL_DEBUG_GPS
   Serial.print("Start GPS INIT\n");
 #endif
 
   for (uint8_t i = 0; i < SPEEDS; i++)
   {
     // SerialWriteString(MON_SERIAL, "Speed\n");
+#ifdef PL_DEBUG_GPS
+      Serial.print("Try ");
+      Serial.println(init_speed[i]);
+#endif
 
     // Serial2Open(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
-    gpsSerial.begin(init_speed[i], SWSERIAL_8N1, RXD2, TX2, false);
+    gpsSerial.begin(init_speed[i], SWSERIAL_8N1, RXD2, TXD2, false);
+#if (GPS_BAUD == 9600)
+    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,9600,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
+#endif
 #if (GPS_BAUD == 19200)
-    SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,19200,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
+    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,19200,0*23\r\n")); // 19200 baud - minimal speed for 5Hz update rate
 #endif
 #if (GPS_BAUD == 38400)
     Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,38400,0*26\r\n")); // 38400 baud
 #endif
 #if (GPS_BAUD == 57600)
-    SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,57600,0*2D\r\n")); // 57600 baud
+    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,57600,0*2D\r\n")); // 57600 baud
 #endif
 #if (GPS_BAUD == 115200)
-    SerialGpsPrint(PSTR("$PUBX,41,1,0003,0001,115200,0*1E\r\n")); // 115200 baud
+    Serial2GpsPrint(PSTR("$PUBX,41,1,0003,0001,115200,0*1E\r\n")); // 115200 baud
 #endif
-#ifdef PL_DEBUG
-    Serial.print("Wait for empty buffer\n");
-#endif
-
     while (!gpsSerial.availableForWrite())
     {
       delay(10);
-#ifdef PL_DEBUG
-      // Serial.print("X");
+#ifdef PL_DEBUG_GPS
+      Serial.print("X");
 #endif
     }
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
     Serial.print("Buffer empty\n");
 #endif
     // Serial2Close();
@@ -101,20 +119,20 @@ void gps::GPS_Serial2Init(void)
   }
   delay(500);
   // Serial2Open(GPS_BAUD);
-  gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, RXD2, TX2, false);
+  gpsSerial.begin(GPS_BAUD, SWSERIAL_8N1, RXD2, TXD2, false);
 
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX config\n");
 #endif
   for (uint8_t i = 0; i < sizeof(UBLOX_INIT); i++)
   { // send configuration data in UBX protocol
-    //Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
+    // Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
     gpsSerial.write(pgm_read_byte(UBLOX_INIT + i));
-    gpsSerial.flush();
+    //gpsSerial.flush();
     delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX complete\n");
 #endif
@@ -158,46 +176,86 @@ uint8_t hex_c(uint8_t n)
   return n;
 }
 
-bool gps::SerialAvailable(){
+bool gps::SerialAvailable()
+{
   return (gpsSerial.available() > 0);
 }
 
-uint8_t gps::ReadByte(){
-    return gpsSerial.read();
+uint8_t gps::ReadByte()
+{
+  return gpsSerial.read();
 }
 bool gps::GPS_newFrame(uint8_t data)
 {
 
   uint8_t st = _step + 1;
   bool ret = false;
+  // Serial.println(st);
 
   if (st == 2)
+  {
     if (PREAMBLE2 != data)
+    {
+      Serial.print("Step ");
+      Serial.print(st);
+      Serial.print(" wrong data ");
+      Serial.println(data);
       st--; // in case of faillure of the 2nd header byte, still test the first byte
+    }
+    else
+    {
+      Serial.print("Step ");
+      Serial.print(st);
+      Serial.print(" data ");
+      Serial.println(data);
+    }
+
+  }
   if (st == 1)
   {
     if (PREAMBLE1 != data)
+    {
+      /*
+      Serial.print("Step ");
+      Serial.print(st);
+      Serial.print(" wrong data ");
+      Serial.println(data);
+      */
       st--;
+    }
+    else
+    {
+      Serial.print("Step ");
+      Serial.print(st);
+      Serial.print(" data ");
+      Serial.println(data);
+    }
   }
   else if (st == 3)
-  {                       // CLASS byte, not used, assume it is CLASS_NAV
+  { // CLASS byte, not used, assume it is CLASS_NAV
+    Serial.println(st);
     _ck_b = _ck_a = data; // reset the checksum accumulators
   }
   else if (st > 3 && st < 8)
   {
-    // SerialWriteHex(MON_SERIAL, GPS_numSat);
-
+// SerialWriteHex(MON_SERIAL, GPS_numSat);
+#ifdef PL_DEBUG_GPS
+    Serial.print(st);
+#endif
     _ck_b += (_ck_a += data); // checksum byte
     if (st == 4)
     {
+      Serial.println(st);
       _msg_id = data;
     }
     else if (st == 5)
     {
+      Serial.println(st);
       _payload_length = data; // payload length low byte
     }
     else if (st == 6)
     {
+      Serial.println(st);
       _payload_length += (uint16_t)(data << 8);
       if (_payload_length > 512)
       {
@@ -220,6 +278,7 @@ bool gps::GPS_newFrame(uint8_t data)
   }
   else if (st == 8)
   {
+    Serial.println(st);
     if (_ck_a != data)
     {
       st = 0; // bad checksum
@@ -231,9 +290,10 @@ bool gps::GPS_newFrame(uint8_t data)
     st = 0;
     if (_ck_b == data)
     { // good checksum
+      Serial.println(_msg_id);
       if (_msg_id == MSG_POSLLH)
       {
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
         Serial.print("Pos ");
         Serial.print(String(_buffer.posllh.latitude));
         Serial.print(" ");
@@ -264,7 +324,7 @@ bool gps::GPS_newFrame(uint8_t data)
             hours -= 24;
           }
 
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
           Serial.print(String(hours));
 #endif
 
@@ -296,7 +356,7 @@ bool gps::GPS_newFrame(uint8_t data)
       }
       else if (_msg_id == MSG_SOL)
       {
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
         Serial.print("Sol ");
         Serial.print(String(_buffer.solution.fix_type));
         Serial.print(" Time ");
@@ -314,7 +374,7 @@ bool gps::GPS_newFrame(uint8_t data)
         fc.GPS_FIX = 0;
         if ((_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.solution.fix_type == FIX_3D || _buffer.solution.fix_type == FIX_2D))
         {
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
           Serial.print("\n=====Fix\n");
 #endif
           fc.GPS_FIX = 1;
@@ -336,7 +396,8 @@ bool gps::GPS_newFrame(uint8_t data)
           // display(D_SAT, "Sat Count:");
           char buffer[10]; // Buffer to hold the converted string
           sprintf(buffer, "%d", tmpGPS_numSat);
-#ifdef PL_DEBUG
+#ifdef PL_DEBUG_GPS
+          Serial.print("Sat Count: ");
           Serial.println(buffer);
 #endif
           // display(D_SAT_COUNT, buffer);
@@ -445,4 +506,16 @@ long Update(long now, long last, int x, int y)
     //   myGLCD.printNumI(now, x, y, 2, '0');
   }
   return now;
+}
+
+void SerialWriteHex(uint8_t port, uint8_t c)
+{
+  char hexBuffer[5]; // To hold the hex representation (e.g., "0x12\0")
+  snprintf(hexBuffer, sizeof(hexBuffer), "0x%02X", (uint8_t)(c));
+  // Send each character of the hexBuffer individually
+  for (int i = 0; hexBuffer[i] != '\0'; i++)
+  {
+    // SerialWrite((uint8_t)(hexBuffer[i]));
+  }
+  // SerialWrite(' ');
 }

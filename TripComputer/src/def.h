@@ -2,10 +2,10 @@
 #define DEF_H_
 #define GPS 1
 // pinout https://microcontrollerslab.com/esp32-pinout-use-gpio-pins/
-// #define GPS_BAUD 9600
+//#define GPS_BAUD 9600
 // #define GPS_BAUD 115200
-// #define GPS_BAUD 57600
-#define GPS_BAUD 38400
+#define GPS_BAUD 57600
+//#define GPS_BAUD 38400
 // #define GPS_BAUD 19200
 #define MON_BAUD 115200
 #define RXBUFFER 500
@@ -49,5 +49,5 @@
 #define GPIO22 22 // SCL
 #define GPIO23 23 // TFT_MOSI
 
-//#define PL_DEBUG 1
+#define PL_DEBUG_GPS 1
 #endif
