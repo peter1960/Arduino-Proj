@@ -24,7 +24,7 @@ int d = 0;
 
 void setup()
 {
-#ifdef PL_DEBUG_GPS || PL_DEBUG_DISPLAY
+#if defined(PL_DEBUG_GPS) || defined(PL_DEBUG_DISPLAY)
 
   Serial.begin(115200);
 #endif
@@ -38,7 +38,7 @@ void setup()
   pinMode(ECU_ON, INPUT);
   pinMode(WIFI_ON, INPUT);
 
-#ifdef PL_DEBUG_GPS || PL_DEBUG_DISPLAY
+#if defined(PL_DEBUG_GPS) || defined(PL_DEBUG_DISPLAY)
 
   Serial.println("");
   Serial.println("Serial Txd is on pin: " + String(TXD2));
@@ -164,7 +164,7 @@ void loop()
     if (TheGPS->GPS_newFrame(inByte))
     {
 #ifdef PL_DEBUG_GPS
-     Serial.print(String(inByte));
+      //Serial.print(String(inByte));
       // Serial.print("\n");
 #endif
     }
