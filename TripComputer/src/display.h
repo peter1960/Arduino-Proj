@@ -22,6 +22,19 @@
 #define SWIDE 150
 #define SHIGH 80
 
+// Status
+#define SAT_WIDE 49
+#define SAT_LEFT 480-SAT_WIDE
+#define SAT_HIGH 29
+#define SAT_TOP 45
+//RES
+#define RES_WIDE 49
+#define RES_LEFT 480-SAT_WIDE
+#define RES_HIGH 29
+#define RES_TOP SAT_TOP+SAT_HIGH
+
+
+
 // linear bar sizes
 #define BAR_HEIGHT 155
 #define BAR_OFFSET 19
@@ -45,6 +58,7 @@ private:
     int plotSatLines[BAR_SAT_POINTS + 1];
     int value[6] = {0, 0, 0, 0, 0, 0};
     int old_value[6] = {0, -1, -1, -1, -1, -1};
+    bool m_HasLock;
     enum
     {
         SAT_COUNT = 0
@@ -55,6 +69,8 @@ private:
     pBox *b_Lock;
     pBox *b_IP;
     pBox *b_ECU;
+    pBox *b_Sats;
+    pBox *b_Res;
     pSpeedBox *b_GPSSpeed;
     pSpeedBox *b_ECUkmh;
     pSpeedBox *b_ECURPM;
@@ -69,6 +85,7 @@ public:
     void DisplayTime(const char *time);
     void screenLayout();
     void DisplayStat(int sat);
+    void Accuracy(int distance);
     void Wifi(bool yes);
     void ipAdress(const char *ip);
     void speed(float);
@@ -77,4 +94,5 @@ public:
     void ECUConnect(bool yes);
     void Rec(bool yes);
     void rpm(float rpm);
+    void Sats(int count);
 };

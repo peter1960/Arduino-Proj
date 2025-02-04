@@ -11,7 +11,7 @@
 //#define RXBUFFER 500
 //#define TXBUFFER 500
 #define SPEED_SAMPLES 10  // used to average speed
-// uncomment to enable emulator connection
+#define EARTH_RADIUS 6371000.0  // Earth's radius in meters
 // PINS
 
 // First Side

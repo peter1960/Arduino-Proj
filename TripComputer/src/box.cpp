@@ -19,10 +19,7 @@ pBox::pBox(int left, int top, int width, int height, int fillon, int filloff, co
     this->left = left;
     this->fillon = fillon;
     this->filloff = filloff;
-    int l = strlen(boxText);
-    strncpy(p_boxText, boxText, l);
-    // terminate the string
-    p_boxText[l] = '\0';
+    p_boxText = boxText;
 }
 
 void pBox::TweekY(int tweek)
@@ -34,6 +31,21 @@ void pBox::Draw(TFT_eSPI &tft)
     tft.drawRect(left, top, width, height, TFT_WHITE); // Draw bezel line
     FillRect(tft, ButtonOff);
 }
+
+void pBox::DrawJustText(TFT_eSPI &tft, String label)
+{
+    FillRect(tft, ButtonOff);
+    if (label != p_boxText)
+    {
+        Serial.println("Print Label");
+        tft.setTextColor(filloff);
+        tft.drawCentreString(p_boxText, left + (width / 2), top + (height / 4), 2);
+        p_boxText = label;
+        tft.setTextColor(TFT_WHITE);
+        tft.drawCentreString(p_boxText, left + (width / 2), top + (height / 4) , 2);
+    }
+}
+
 bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
 {
     tft.drawRect(left, top, width, height, TFT_WHITE); // Draw bezel line
@@ -61,7 +73,6 @@ bool pBox::FillRect(TFT_eSPI &tft, TriState BoxState)
     }
     return false;
 }
-
 void pBox::DrawText(TFT_eSPI &tft, TriState BoxState)
 {
     // Serial.print("New ");

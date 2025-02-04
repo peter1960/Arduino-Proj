@@ -59,15 +59,6 @@ void setup()
 #ifdef PL_DEBUG_DISPLAY
   Serial.println("Display Done");
 #endif
-  // dis->analogMeter(); // Draw analogue meter
-
-  // dis.plotLinearSat("Sat");
-  //  plotLinear("A1", 1 * d, 160);
-  //  plotLinear("A2", 2 * d, 160);
-  //  plotLinear("A3", 3 * d, 160);
-  //  plotLinear("A4", 4 * d, 160);
-  //  plotLinear("A5", 5 * d, 160);
-  // dis->WiFiOff();
   StartWifi();
   // dis->WiFiOn();
 
@@ -92,6 +83,8 @@ void loop()
   REC_MODE = digitalRead(REC_ON);
   dis->Rec(REC_MODE);
   ECU_MODE = digitalRead(ECU_ON);
+  WIFI_MODE = digitalRead(WIFI_ON);
+  dis->Wifi(WIFI_MODE);
   /*
   Check if ECU should connect and
   if connected, if not then  will flash
@@ -113,15 +106,19 @@ void loop()
   {
     dis->ECUConnect(false);
   }
-  WIFI_MODE = digitalRead(WIFI_ON);
-  dis->Wifi(WIFI_MODE);
 
   // dis->ipAdress(WiFi.localIP().toString().c_str());
-  dis->HasLock(TheGPS->HasLock());
-  dis->speed(TheGPS->Speed());
-
   if (updateTime <= millis())
   {
+#ifdef PL_DEBUG_DISPLAY
+    Serial.println(" Display Update");
+#endif
+    dis->HasLock(TheGPS->HasLock());
+    dis->speed(TheGPS->Speed());
+    dis->Sats(TheGPS->SatCount());
+    dis->Accuracy(TheGPS->Accuracy());
+
+    // display update 1 per second
     updateTime = millis() + 1000;
     if (ECU_MODE)
     {
@@ -164,8 +161,8 @@ void loop()
     if (TheGPS->GPS_newFrame(inByte))
     {
 #ifdef PL_DEBUG_GPS
-      //Serial.print(String(inByte));
-      // Serial.print("\n");
+      // Serial.print(String(inByte));
+      //  Serial.print("\n");
 #endif
     }
   }

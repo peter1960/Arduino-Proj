@@ -1,7 +1,5 @@
 #include <Arduino.h>
 #include "def.h"
-#include <SoftwareSerial.h>
-// #include "serial.h"
 #include "gps.h"
 #define GPS_MAIN
 #define SPEEDS 5
@@ -10,8 +8,6 @@ HardwareSerial gpsSerial(2); // ( RXD2, TXD2) ;
 
 flags_struct_t fc;
 uint32_t init_speed[SPEEDS] = {9600, 19200, 38400, 57600, 115200};
-// Force 38400
-// uint32_t init_speed[1] = {38400};
 int GPS_numSat;
 bool updateTimex = true;
 unsigned long last_seconds;
@@ -28,7 +24,7 @@ gps::gps()
 {
   for (int x = 0; x < SPEED_SAMPLES; x++)
   {
-    avg_GPS_speed[x] = 0;
+    m_avg_GPS_speed[x] = 0;
   }
 #ifdef PL_DEBUG_GPS
   Serial.println("GPS Setup Start =================");
@@ -50,11 +46,34 @@ bool gps::HasLock()
 #endif
   return fc.GPS_FIX == 1;
 }
+int gps::SatCount()
+{
+  if (HasLock())
+  {
+    return m_SatCount;
+  }
+  else
+  {
+    return 0;
+  }
+}
+int gps::Accuracy()
+{
+  if (HasLock())
+  {
+    return m_Accuracy;
+  }
+  else
+  {
+    return 0;
+  }
+}
+
 float gps::Speed()
 {
   if (HasLock())
   {
-    return GPS_speed;
+    return m_GPS_speed;
   }
   return -2.0;
 }
@@ -67,7 +86,6 @@ void gps::SerialGpsPrintPROGMEM(const char PROGMEM *str)
   char b;
   while (str && (b = pgm_read_byte(str++)))
   {
-    // Serial2WriteGPS(b);
     gpsSerial.write(b);
     gpsSerial.flush();
     delay(5);
@@ -77,7 +95,6 @@ void gps::SerialGpsPrintPROGMEM(const char PROGMEM *str)
 
 void gps::GPS_Serial2Init(void)
 {
-  // gpsSerial.begin(GPS_SERIAL, GPS_BAUD);
 
 #ifdef PL_DEBUG_GPS
   Serial.print("Start GPS INIT\n");
@@ -85,13 +102,11 @@ void gps::GPS_Serial2Init(void)
 
   for (uint8_t i = 0; i < SPEEDS; i++)
   {
-    // SerialWriteString(MON_SERIAL, "Speed\n");
 #ifdef PL_DEBUG_GPS
     Serial.print("Try ");
     Serial.println(init_speed[i]);
 #endif
 
-    // Serial2Open(init_speed[i]); // switch UART speed for sending SET BAUDRATE command (NMEA mode)
     gpsSerial.begin(init_speed[i], SERIAL_8N1, RXD2, TXD2);
 
 #if (GPS_BAUD == 9600)
@@ -122,22 +137,20 @@ void gps::GPS_Serial2Init(void)
 #ifdef PL_DEBUG_GPS
     Serial.print("Buffer empty\n");
 #endif
-    // Serial2Close();
     gpsSerial.end();
   }
   delay(50);
-  // Serial2Open(GPS_BAUD);
   gpsSerial.begin(GPS_BAUD, SERIAL_8N1, RXD2, TXD2);
 
 #ifdef PL_DEBUG_GPS
   Serial.print(String(__LINE__));
   Serial.print(" Send UBLOX config\n");
 #endif
+  // send configuration data in UBX protocol
   for (uint8_t i = 0; i < sizeof(UBLOX_INIT); i++)
-  { // send configuration data in UBX protocol
-    // Serial2WriteGPS(pgm_read_byte(UBLOX_INIT + i));
+  {
     gpsSerial.write(pgm_read_byte(UBLOX_INIT + i));
-    // gpsSerial.flush();
+    gpsSerial.flush();
     delay(10); // simulating a 38400baud pace (or less), otherwise commands are not accepted by the device.
   }
 #ifdef PL_DEBUG_GPS
@@ -196,7 +209,7 @@ uint8_t gps::ReadByte()
 bool gps::GPS_newFrame(uint8_t data)
 {
 
-  uint8_t st = _step + 1;
+  uint8_t st = m_step + 1;
   bool ret = false;
   // Serial.println(st);
 
@@ -247,7 +260,7 @@ bool gps::GPS_newFrame(uint8_t data)
   else if (st == 3)
   { // CLASS byte, not used, assume it is CLASS_NAV
     // Serial.println(st);
-    _ck_b = _ck_a = data; // reset the checksum accumulators
+    m_ck_b = m_ck_a = data; // reset the checksum accumulators
   }
   else if (st > 3 && st < 8)
   {
@@ -255,44 +268,44 @@ bool gps::GPS_newFrame(uint8_t data)
 #ifdef PL_DEBUG_GPS
     // Serial.print(st);
 #endif
-    _ck_b += (_ck_a += data); // checksum byte
+    m_ck_b += (m_ck_a += data); // checksum byte
     if (st == 4)
     {
       // Serial.println(st);
-      _msg_id = data;
+      m_msg_id = data;
     }
     else if (st == 5)
     {
       // Serial.println(st);
-      _payload_length = data; // payload length low byte
+      m_payload_length = data; // payload length low byte
     }
     else if (st == 6)
     {
       // Serial.println(st);
-      _payload_length += (uint16_t)(data << 8);
-      if (_payload_length > 512)
+      m_payload_length += (uint16_t)(data << 8);
+      if (m_payload_length > 512)
       {
         st = 0;
       }
-      _payload_counter = 0; // prepare to receive payload
+      m_payload_counter = 0; // prepare to receive payload
     }
     else
     {
-      if (_payload_counter + 1 < _payload_length)
+      if (m_payload_counter + 1 < m_payload_length)
       {
         st--; // stay in the same state while data inside the frame
       }
-      if (_payload_counter < sizeof(_buffer))
+      if (m_payload_counter < sizeof(_buffer))
       {
-        _buffer.bt.bytes[_payload_counter] = data;
+        _buffer.bt.bytes[m_payload_counter] = data;
       }
-      _payload_counter++;
+      m_payload_counter++;
     }
   }
   else if (st == 8)
   {
     // Serial.println(st);
-    if (_ck_a != data)
+    if (m_ck_a != data)
     {
       st = 0; // bad checksum
               //      SerialWriteString(MON_SERIAL, "Bad Sum\n");
@@ -301,24 +314,15 @@ bool gps::GPS_newFrame(uint8_t data)
   else if (st == 9)
   {
     st = 0;
-    if (_ck_b == data)
+    if (m_ck_b == data)
     { // good checksum
-      //Serial.println(_msg_id);
-      if (_msg_id == MSG_POSLLH)
+      // Serial.println(m_msg_id);
+      if (m_msg_id == MSG_POSLLH)
       {
-#ifdef PL_DEBUG_GPS
-        Serial.print("MSG_POSLLH Pos ");
-        Serial.print(String(_buffer.posllh.latitude));
-        Serial.print(",");
-        Serial.print(String(_buffer.posllh.longitude));
-        Serial.print(" \n");
-#endif
         if (fc.GPS_FIX)
         {
-
-          // SerialWriteString(MON_SERIAL, "Have Fix\n");
-          uint32_t GPS_coordLON = _buffer.posllh.longitude;
-          uint32_t GPS_coordLAT = _buffer.posllh.latitude;
+          m_GPS_coordLON = _buffer.posllh.longitude;
+          m_GPS_coordLAT = _buffer.posllh.latitude;
           //  p GPS_altitude = _buffer.posllh.altitude_msl / 1000; // alt in m
           uint32_t gpsTimeOfWeek = _buffer.posllh.time; // not used for the moment
           unsigned long gpsWeekNumber = 2100;           // Your GPS week number
@@ -336,19 +340,17 @@ bool gps::GPS_newFrame(uint8_t data)
           {
             hours -= 24;
           }
-
-#ifdef PL_DEBUG_GPS
-          Serial.print(" Hours:" + String(hours));
-#endif
-
           char buffer[40]; // Buffer to hold the converted string
           //  Convert the numerical value to a string using sprintf
-          sprintf(buffer, "%02lu : %02lu : %02lu", hours, minutes, seconds);
+          sprintf(buffer, "%02lu : %02lu : %02lu  H Accuracy: %um", hours, minutes, seconds, _buffer.posllh.horizontal_accuracy / 1000);
 
 #ifdef PL_DEBUG_GPS
-          Serial.print(" Time:" + String(buffer));
+          if (updateFixTime < millis())
+          {
+            Serial.print(" Time:" + String(buffer));
+          }
 #endif
-
+          m_Accuracy = _buffer.posllh.horizontal_accuracy / 1000;
           // PL DisplayTime(buffer);
           /*
           myGLCD.setColor(255, 255, 255);
@@ -358,8 +360,8 @@ bool gps::GPS_newFrame(uint8_t data)
           display(D_TIME_S, seconds);
           if (updateTime)
           {
-            codisplay(D_LAT, GPS_coordLAT);
-            codisplay(D_LON, GPS_coordLON);
+            codisplay(D_LAT, m_GPS_coordLAT);
+            codisplay(D_LON, m_GPS_coordLON);
             updateTime = false;
           }
 
@@ -372,55 +374,68 @@ bool gps::GPS_newFrame(uint8_t data)
         }
         ret = true; // POSLLH message received, allow blink GUI icon and LED, frame available for nav computation
       }
-      else if (_msg_id == MSG_SOL)
+      else if (m_msg_id == MSG_SOL)
       {
+        m_SatCount = _buffer.solution.satellites;
 #ifdef PL_DEBUG_GPS
-        Serial.print("Sol ");
-        Serial.print(String(_buffer.solution.fix_type));
-        Serial.print(" Time ");
-        Serial.print(String(_buffer.solution.time));
-        Serial.print(" Week ");
-        Serial.print(String(_buffer.solution.week));
-        Serial.print(" Type ");
-        switch (_buffer.solution.fix_type)
+        if (updateFixTime < millis())
         {
-        case 0x00:
-          Serial.print(String("'No Fix'"));
-          break;
-        case 0x01:
-          Serial.print(String("'Dead Recon'"));
-          break;
-        case 0x02:
-          Serial.print(String("'2D'"));
-          break;
-        case 0x03:
-          Serial.print(String("'3D'"));
-          break;
-        case 0x04:
-          Serial.print(String("'GPS+Dead Recon'"));
-          break;
-        case 0x05:
-          Serial.print(String("'Time Only'"));
-          break;
-        default:
-          Serial.print(String("'?????'"));
+
+          Serial.print(" Sol:");
+          Serial.print(String(_buffer.solution.fix_type));
+          Serial.print(" Time:");
+          Serial.print(String(_buffer.solution.time));
+          Serial.print(" Week:");
+          Serial.print(String(_buffer.solution.week));
+          Serial.print(" Type:");
+          switch (_buffer.solution.fix_type)
+          {
+          case 0x00:
+            Serial.print(String("'No Fix'"));
+            break;
+          case 0x01:
+            Serial.print(String("'Dead Recon'"));
+            break;
+          case 0x02:
+            Serial.print(String("'2D pos'"));
+            break;
+          case 0x03:
+            Serial.print(String("'3D pos'"));
+            break;
+          case 0x04:
+            Serial.print(String("'GPS+Dead Recon'"));
+            break;
+          case 0x05:
+            Serial.print(String("'Time Only'"));
+            break;
+          default:
+            Serial.print(String("'N/A'"));
+          }
+          Serial.print(" Status:");
+          Serial.print(String(_buffer.solution.fix_status));
+          Serial.print("  Sat Count:");
+          Serial.print(String(_buffer.solution.satellites));
+
+          Serial.print(" MSG_POSLLH Pos ");
+          Serial.print(String(m_GPS_coordLON));
+          Serial.print(",");
+          Serial.print(String(m_GPS_coordLAT));
+          Serial.print(" \n");
+
+          updateFixTime = millis() + 1000;
         }
-        Serial.print(" Status ");
-        Serial.print(String(_buffer.solution.fix_status));
-        Serial.print("  Sat Count ");
-        Serial.println(String(_buffer.solution.satellites));
 #endif
         // SerialWriteString(MON_SERIAL, "Have Sol\n");
         fc.GPS_FIX = 0;
         if ((_buffer.solution.fix_status & NAV_STATUS_FIX_VALID) && (_buffer.solution.fix_type == FIX_3D || _buffer.solution.fix_type == FIX_2D))
         {
 #ifdef PL_DEBUG_GPS
-          Serial.print("\n=====Fix======\n");
+          // Serial.print("\n=====Fix======\n");
 #endif
           fc.GPS_FIX = 1;
 
 #ifdef PL_DEBUG_GPS
-          SerialWriteHex(_buffer.solution.fix_type);
+          // SerialWriteHex(_buffer.solution.fix_type);
 #endif
         }
         else
@@ -436,7 +451,7 @@ bool gps::GPS_newFrame(uint8_t data)
           char buffer[10]; // Buffer to hold the converted string
           sprintf(buffer, "%d", tmpGPS_numSat);
 #ifdef PL_DEBUG_GPS
-          Serial.print("Sat Count: ");
+          Serial.print("Sat Count:");
           Serial.println(buffer);
 #endif
           // display(D_SAT_COUNT, buffer);
@@ -452,30 +467,57 @@ bool gps::GPS_newFrame(uint8_t data)
           digitalWrite(LED_BUILTIN, LOW); // turn the LED on (HIGH is the voltage level)
         }
       }
-      else if (_msg_id == MSG_VELNED)
+      else if (m_msg_id == MSG_VELNED)
       {
 
-        GPS_speed = _buffer.velned.speed_2d;
-        GPS_speed = (GPS_speed * 60 * 60) / 100 / 1000;
+        m_GPS_speed = _buffer.velned.speed_2d;
+        m_GPS_speed = (m_GPS_speed * 60 * 60) / 100 / 1000;
         float tSpeed = 0;
         for (int x = 0; x < SPEED_SAMPLES - 1; x++)
         {
           // move them down by 1
-          avg_GPS_speed[x] = avg_GPS_speed[x + 1];
+          m_avg_GPS_speed[x] = m_avg_GPS_speed[x + 1];
           // sum the values
-          tSpeed += avg_GPS_speed[x];
+          tSpeed += m_avg_GPS_speed[x];
         }
         // add on new last value
-        avg_GPS_speed[SPEED_SAMPLES] = GPS_speed;
-        tSpeed += avg_GPS_speed[SPEED_SAMPLES];
+        m_avg_GPS_speed[SPEED_SAMPLES] = m_GPS_speed;
+        tSpeed += m_avg_GPS_speed[SPEED_SAMPLES];
         // get average
-        GPS_speed = tSpeed / SPEED_SAMPLES;
+        m_GPS_speed = tSpeed / SPEED_SAMPLES;
         //  p GPS_ground_course = (uint16_t)(_buffer.velned.heading_2d / 10000); // Heading 2D deg * 100000 rescaled to deg * 10 //not used for the moment
       }
     }
   }
-  _step = st;
+  m_step = st;
   return ret;
+}
+
+double deg_to_rad(double degrees)
+{
+  return degrees * (M_PI / 180.0);
+}
+
+// Haversine formula to calculate the distance
+double haversine(double lat1, double lon1, double lat2, double lon2)
+{
+  // Convert latitude and longitude from degrees to radians
+  lat1 = deg_to_rad(lat1);
+  lon1 = deg_to_rad(lon1);
+  lat2 = deg_to_rad(lat2);
+  lon2 = deg_to_rad(lon2);
+
+  // Compute differences
+  double dlat = lat2 - lat1;
+  double dlon = lon2 - lon1;
+
+  // Haversine formula
+  double a = sin(dlat / 2) * sin(dlat / 2) +
+             cos(lat1) * cos(lat2) * sin(dlon / 2) * sin(dlon / 2);
+  double c = 2 * atan2(sqrt(a), sqrt(1 - a));
+
+  // Compute distance
+  return EARTH_RADIUS * c;
 }
 
 void gps::insertPeriod(String &number, unsigned int position)

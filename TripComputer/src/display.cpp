@@ -10,15 +10,18 @@ Display::Display()
     // tft.fillRect(0, 0, 239, 126, TFT_BLACK);
     // tft.fillRect(5, 3, 230, 119, TFT_WHITE);
     value[SAT_COUNT] = 0;
-    b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"Wifi");
-    b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"Rec");
-    b_Lock = new pBox(BX + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"Lock");
-    b_ECU = new pBox(BX + BWIDE + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED,"ECU");
-    b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK,"IP");
+    b_Wifi = new pBox(BX, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED, "Wifi");
+    b_Rec = new pBox(BX + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED, "Rec");
+    b_Lock = new pBox(BX + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED, "Lock");
+    b_ECU = new pBox(BX + BWIDE + BWIDE + BWIDE, BY, BWIDE, BHIGH, TFT_GREEN, TFT_RED, "ECU");
+    b_IP = new pBox(IX, IY, IWIDE, IHIGH, TFT_GREEN, TFT_BLACK, "IP");
     b_IP->TweekY(-3);
-    b_GPSSpeed = new pSpeedBox(SX, SY, SWIDE, SHIGH,"g-kmh");
-    b_ECUkmh = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH,"kmh");
-    b_ECURPM = new pSpeedBox(SX, SY + SHIGH + SHIGH, SWIDE, SHIGH,"rpm");
+    b_Sats = new pBox(SAT_LEFT, SAT_TOP, SAT_WIDE, SAT_HIGH, TFT_GREEN, TFT_BLACK, "0");
+    b_Res = new pBox(RES_LEFT, RES_TOP, RES_WIDE, RES_HIGH, TFT_GREEN, TFT_BLACK, "0");
+
+    b_ECURPM = new pSpeedBox(SX, SY, SWIDE, SHIGH, "rpm");
+    b_ECUkmh = new pSpeedBox(SX, SY + SHIGH, SWIDE, SHIGH, "kmh");
+    b_GPSSpeed = new pSpeedBox(SX, SY + SHIGH + SHIGH, SWIDE, SHIGH, "g-kmh");
 }
 void Display::plotSpeed(int value, byte ms_delay)
 {
@@ -106,16 +109,18 @@ void Display::screenLayout()
     b_GPSSpeed->Draw(tft);
     b_ECUkmh->Draw(tft);
     b_ECURPM->Draw(tft);
+    b_Sats->DrawJustText(tft, "XX");
+    b_Res->DrawJustText(tft, "XX");
 }
 void Display::Wifi(bool yes)
 {
     if (yes)
     {
-    b_Wifi->DrawText(tft, ButtonOn);
+        b_Wifi->DrawText(tft, ButtonOn);
     }
     else
     {
-    b_Wifi->DrawText(tft,  ButtonOff);
+        b_Wifi->DrawText(tft, ButtonOff);
     }
 }
 void Display::Rec(bool yes)
@@ -126,7 +131,7 @@ void Display::Rec(bool yes)
     }
     else
     {
-        b_Rec->DrawText(tft,  ButtonOff);
+        b_Rec->DrawText(tft, ButtonOff);
     }
 }
 void Display::ipAdress(const char *ip)
@@ -135,6 +140,7 @@ void Display::ipAdress(const char *ip)
 }
 void Display::HasLock(bool yes)
 {
+    m_HasLock = yes;
     if (yes)
     {
         b_Lock->DrawText(tft, ButtonOn);
@@ -148,26 +154,63 @@ void Display::ECUConnect(bool yes)
 {
     if (yes)
     {
-        b_ECU->DrawText(tft,  ButtonOn);
+        b_ECU->DrawText(tft, ButtonOn);
     }
     else
     {
         b_ECU->DrawText(tft, ButtonOff);
     }
 }
+void Display::Sats(int count)
+{
+    b_Sats->DrawJustText(tft, String(count));
+}
+
+void Display::Accuracy(int distance)
+{
+    if (m_HasLock)
+    {
+        b_Res->DrawJustText(tft, String(distance) + "m");
+    }
+    else
+    {
+        b_Res->DrawJustText(tft, "N/A");
+    }
+}
+
 void Display::speed(float gps_speed)
 {
-    b_GPSSpeed->Speed(tft, gps_speed);
+    if (m_HasLock)
+    {
+        b_GPSSpeed->Speed(tft, String(gps_speed, 0));
+    }
+    else
+    {
+        b_GPSSpeed->Speed(tft, "---");
+    }
 }
 void Display::ecu_speed(float ecu_speed)
 {
-    b_ECUkmh->Speed(tft, ecu_speed);
+    if (ecu_speed > -1)
+    {
+        b_ECUkmh->Speed(tft, String(ecu_speed, 0));
+    }
+    else
+    {
+        b_ECUkmh->Speed(tft, "---");
+    }
 }
 void Display::rpm(float rpm)
 {
-    b_ECURPM->Speed(tft, rpm);
+    if (rpm > -1)
+    {
+        b_ECURPM->Speed(tft, String(rpm, 0));
+    }
+    else
+    {
+        b_ECURPM->Speed(tft, "---");
+    }
 }
-
 
 void Display::analogMeter()
 {

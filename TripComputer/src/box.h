@@ -18,14 +18,15 @@ public:
 
     void DrawText(TFT_eSPI &tft, TriState BoxState);
     void TweekY(int);
+    void DrawJustText(TFT_eSPI &tft,String label);
 
 protected:
     int width;
     int height;
     int top;
     int left;
-    char p_boxText[16];
-    char p_boxLabel[6];
+    String p_boxText;
+    String p_boxLabel;
     virtual void Draw(TFT_eSPI &tft);
 
 
