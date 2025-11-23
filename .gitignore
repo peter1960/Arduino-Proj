@@ -42,3 +42,4 @@ TripComputer/src/mysecrets.h
 *.map
 *build*
 *idf-diag*
+*idf_*
