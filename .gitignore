@@ -40,3 +40,5 @@ TripComputer/kicad/fp-info-cache
 TripComputer/src/mysecrets.h
 *.bin
 *.map
+*build*
+*idf-diag*
