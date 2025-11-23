@@ -1,0 +1,208 @@
+/* Get all possible data from MPU6050
+ * Accelerometer values are given as multiple of the gravity [1g = 9.81 m/s²]
+ * Gyro values are given in deg/s
+ * Angles are given in degrees
+ * Note that X and Y are tilt angles and not pitch/roll.
+ *
+ * License: MIT
+ */
+
+// #define SCAN
+// #define CALIBRATE
+#define XYZ
+// #define BEARING
+// #define DIRECTION
+#include "Arduino.h"
+#include "Wire.h"
+#ifndef SCAN
+#include <QMC5883LCompass.h>
+QMC5883LCompass compass;
+
+#endif
+
+// MPU6050 mpu(Wire);
+
+long timer = 0;
+#define WIRE Wire
+
+#ifdef CALIBRATE
+void setup()
+{
+  Serial.begin(9600);
+  compass.init();
+
+  Serial.println("This will provide calibration settings for your QMC5883L chip. When prompted, move the magnetometer in all directions until the calibration is complete.");
+  Serial.println("Calibration will begin in 5 seconds.");
+  delay(5000);
+
+  Serial.println("CALIBRATING. Keep moving your sensor...");
+  compass.calibrate();
+
+  Serial.println("DONE. Copy the lines below and paste it into your projects sketch.);");
+  Serial.println();
+  Serial.print("compass.setCalibrationOffsets(");
+  Serial.print(compass.getCalibrationOffset(0));
+  Serial.print(", ");
+  Serial.print(compass.getCalibrationOffset(1));
+  Serial.print(", ");
+  Serial.print(compass.getCalibrationOffset(2));
+  Serial.println(");");
+  Serial.print("compass.setCalibrationScales(");
+  Serial.print(compass.getCalibrationScale(0));
+  Serial.print(", ");
+  Serial.print(compass.getCalibrationScale(1));
+  Serial.print(", ");
+  Serial.print(compass.getCalibrationScale(2));
+  Serial.println(");");
+}
+
+void loop()
+{
+  delay(1000);
+}
+#else
+void setup()
+{
+  Serial.begin(9600);
+#ifdef SCAN
+  WIRE.begin();
+  Serial.println("\nI2C Scanner ");
+#else
+  compass.init();
+  compass.setCalibrationOffsets(223.00, 645.00, -73.00);
+  compass.setCalibrationScales(1.01, 0.91, 1.09);
+  compass.setSmoothing(5, true);
+#endif
+
+  while (!Serial)
+  {
+    delay(10);
+  }
+
+#ifndef SCAN
+
+#endif
+  /*
+  Wire.begin();
+
+  byte status = mpu.begin();
+  Serial.print(F("MPU6050 status: "));
+  Serial.println(status);
+  while (status != 0)
+  {
+  } // stop everything if could not connect to MPU6050
+
+  Serial.println(F("Calculating offsets, do not move MPU6050"));
+  delay(1000);
+  mpu.calcOffsets(true, true); // gyro and accelero
+  */
+  // Serial.println("Done!\n");
+}
+
+#ifdef SCAN
+void loop()
+{
+  byte error, address;
+  int nDevices;
+
+  Serial.println("Scanning...");
+
+  nDevices = 0;
+  for (address = 1; address < 127; address++)
+  {
+    // The i2c_scanner uses the return value of
+    // the Write.endTransmisstion to see if
+    // a device did acknowledge to the address.
+    WIRE.beginTransmission(address);
+    error = WIRE.endTransmission();
+
+    if (error == 0)
+    {
+      Serial.print("I2C device found at address 0x");
+      if (address < 16)
+        Serial.print("0");
+      Serial.print(address, HEX);
+      Serial.println("  !");
+
+      nDevices++;
+    }
+    else if (error == 4)
+    {
+      Serial.print("Unknown error at address 0x");
+      if (address < 16)
+        Serial.print("0");
+      Serial.println(address, HEX);
+    }
+  }
+  if (nDevices == 0)
+    Serial.println("No I2C devices found\n");
+  else
+    Serial.println("done\n");
+
+  delay(5000); // wait 5 seconds for next scan
+}
+#else
+int nloop = 0;
+void loop()
+{
+#ifdef BEARING
+  compass.read();
+
+  byte a = compass.getAzimuth();
+  // Output here will be a value from 0 - 15 based on the direction of the bearing / azimuth.
+  byte b = compass.getBearing(a);
+
+  Serial.print("Bearing: ");
+  Serial.print(a);
+  Serial.println();
+
+  delay(250);
+#endif
+#ifdef XYZ
+  int x, y, z;
+
+  // Read compass values
+  compass.read();
+
+  // Return XYZ readings
+  x = compass.getX();
+  y = compass.getY();
+  z = compass.getZ();
+  float magnitude = sqrt(x*x +y*y +z*z);
+  float tilt =acos(z/magnitude)*180.0 /PI;
+  
+  nloop++;
+  if (nloop > 4)
+  {
+    nloop = 0;
+    Serial.print(tilt);
+    Serial.print(" X: ");
+    Serial.print(x);
+    Serial.print(" Y: ");
+    Serial.print(y);
+    Serial.print(" Z: ");
+    Serial.print(z);
+    Serial.println();
+  }
+
+  delay(200);
+#endif
+#ifdef DIRECTION
+  compass.read();
+
+  byte a = compass.getAzimuth();
+
+  char myArray[3];
+  compass.getDirection(myArray, a);
+
+  Serial.print(myArray[0]);
+  Serial.print(myArray[1]);
+  Serial.print(myArray[2]);
+  Serial.println();
+
+  delay(250);
+#endif
+}
+
+#endif
+#endif
