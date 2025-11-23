@@ -38,3 +38,5 @@
 .pio/build/project.checksum
 TripComputer/kicad/fp-info-cache
 TripComputer/src/mysecrets.h
+*.bin
+*.map
