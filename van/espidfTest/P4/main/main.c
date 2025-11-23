@@ -10,6 +10,8 @@
 #include "mpu6050.h"
 #include "esp_system.h"
 #include "esp_log.h"
+#include "mqtt_client.h"
+#include "esp_wifi.h"
 
 #define I2C_MASTER_SCL_IO 22      /*!< gpio number for I2C master clock */
 #define I2C_MASTER_SDA_IO 21      /*!< gpio number for I2C master data  */
@@ -18,6 +20,8 @@
 
 static const char *TAG = "mpu6050";
 static const char *TAG_INT = "mpu6050 init";
+static const char *TAG_MQTT = "mqtt";
+static const char *TAG_WIFI = "wifi";
 static mpu6050_handle_t mpu6050 = NULL;
 
 /**
@@ -114,8 +118,39 @@ void test()
     }
     // TEST_ASSERT_EQUAL(ESP_OK, ret);
 }
+
+void init_wifi()
+{
+    ESP_LOGI(TAG_WIFI, "Start");
+    // cfg = WIFI_INIT_CONFIG_DEFAULT();
+    wifi_init_config_t wifi_config = WIFI_INIT_CONFIG_DEFAULT();
+    int ret = esp_wifi_init(&wifi_config);
+    if (ESP_OK != ret)
+    {
+        ESP_LOGE(TAG, "Wifi init Failed %d", ret);
+    }
+}
+
+void init_mqtt()
+{
+    ESP_LOGI(TAG_MQTT, "Start");
+
+    esp_mqtt_client_config_t mqtt_cfg = {
+        .broker.address.uri = "mqtt://192.168.20.1:1883",
+        .credentials.username = "node",
+        .credentials.authentication.password = "password"};
+    esp_mqtt_client_handle_t client = esp_mqtt_client_init(&mqtt_cfg);
+    int ret = esp_mqtt_client_start(client);
+    if (ESP_OK != ret)
+    {
+        ESP_LOGE(TAG_MQTT, "mqtt Failed %d", ret);
+    }
+}
+
 int app_main(void)
 {
+    init_wifi();
+    // init_mqtt();
     ESP_LOGI(TAG, "Start");
     i2c_sensor_mpu6050_init();
     test();
