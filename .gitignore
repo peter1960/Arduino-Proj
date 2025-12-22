@@ -43,3 +43,6 @@ TripComputer/src/mysecrets.h
 *build*
 *idf-diag*
 *idf_*
+managed_components*
+*dependencies.lock
+*CMakeLists.txt
