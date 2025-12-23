@@ -8,11 +8,11 @@
 #include "peter_pulse.h"
 
 #define PULSE_WIDTH_MS 10  // Width of the pulse (ms)
-#define MIN_PERIOD_MS 200  // Minimum period
+#define MIN_PERIOD_MS 100  // Minimum period
 #define MAX_PERIOD_MS 4000 // Maximum period
 
 #define ADC_WIDTH_CFG ADC_WIDTH_BIT_12 // 12-bit: 0..4095
-#define ADC_ATTEN_CFG ADC_ATTEN_DB_11  // ~ up to 3.3V input
+#define ADC_ATTEN_CFG ADC_ATTEN_DB_12  // ~ up to 3.3V input
 
 static const char *TAG = "ADC READ";
 
@@ -43,7 +43,7 @@ static int read_adc_avg(int samples)
 
 void pulse_task(void *arg)
 {
-    ESP_LOGI(TAG, "Pulse task started. Output GPIO=%d", PULSE_OUT);
+    ESP_LOGI(TAG, "Pulse task started. Output GPIO=%d to send to %d", PULSE_OUT, WHEEL_PULSE);
     adc1_config_width(ADC_WIDTH_CFG);
     adc1_config_channel_atten(ADC_CHANNEL, ADC_ATTEN_CFG);
 
@@ -61,14 +61,16 @@ void pulse_task(void *arg)
     {
         // Read ADC and map to period
         int raw = read_adc_avg(16); // average over 16 samples to reduce noise
-        // ESP_LOGI(TAG, "Raw: %d", raw);
         uint32_t period_ms = map_adc_to_ms(raw);
+        // ESP_LOGI(TAG, "Raw: %d -> Mapped: %d", raw, period_ms);
 
-        // Generate a pulse of fixed width
-        gpio_set_level(PULSE_OUT, 1);
-        vTaskDelay(pdMS_TO_TICKS(PULSE_WIDTH_MS));
-        gpio_set_level(PULSE_OUT, 0);
-
+        // Generate a pulse of fixed width only if less than max
+        if (period_ms < MAX_PERIOD_MS)
+        {
+            gpio_set_level(PULSE_OUT, 1);
+            vTaskDelay(pdMS_TO_TICKS(PULSE_WIDTH_MS));
+            gpio_set_level(PULSE_OUT, 0);
+        }
         // Wait remainder of the period
         uint32_t remainder_ms = (period_ms > PULSE_WIDTH_MS) ? (period_ms - PULSE_WIDTH_MS) : 0;
         if (remainder_ms > 0)
@@ -78,7 +80,7 @@ void pulse_task(void *arg)
         else
         {
             // If your pulse width >= period, just yield briefly to avoid starving other tasks
-            vTaskDelay(pdMS_TO_TICKS(1));
+            vTaskDelay(pdMS_TO_TICKS(1000));
         }
     }
 }

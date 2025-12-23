@@ -28,6 +28,7 @@ static const char *TAG = "DISPLAY";
 
 //////////////////////
 portMUX_TYPE g_dataLockSpeed = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE g_dataLockDistance = portMUX_INITIALIZER_UNLOCKED;
 /*
      data below is locked on read/write
 */
@@ -35,29 +36,46 @@ static float g_speed = 0.0f;
 static float g_odometer = 0.0f;
 //////////////////////
 
-void speed_set(float s_speed, float s_distance)
+void speed_pulse()
 {
     speed_lock();
-    g_speed = s_speed;
-    g_odometer += s_distance;
+    g_speed++;
     speed_unlock();
 }
-
-void speed_mutex_init(void)
+int speed_read_reset()
 {
-    // s_speed_mutex = xSemaphoreCreateMutex();
+    speed_lock();
+    float val = g_speed;
+    g_speed = 0;
+    speed_unlock();
+    return val;
+}
+
+void distance_set(float s_distance)
+{
+    distance_lock();
+    g_odometer += s_distance;
+    distance_unlock();
 }
 
 void speed_lock(void)
 {
     portENTER_CRITICAL(&g_dataLockSpeed);
-    // xSemaphoreTake(s_speed_mutex, portMAX_DELAY);
 }
 
 void speed_unlock(void)
 {
     portEXIT_CRITICAL(&g_dataLockSpeed);
-    // xSemaphoreGive(s_speed_mutex);
+}
+
+void distance_lock(void)
+{
+    portENTER_CRITICAL(&g_dataLockDistance);
+}
+
+void distance_unlock(void)
+{
+    portEXIT_CRITICAL(&g_dataLockDistance);
 }
 
 void display_task(void *args)
