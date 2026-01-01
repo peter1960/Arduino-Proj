@@ -27,27 +27,38 @@ static const char *TAG = "DISPLAY";
 // static SemaphoreHandle_t s_speed_mutex;
 
 //////////////////////
-portMUX_TYPE g_dataLockSpeed = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE g_dataLockSpeedPulse = portMUX_INITIALIZER_UNLOCKED;
 portMUX_TYPE g_dataLockDistance = portMUX_INITIALIZER_UNLOCKED;
+portMUX_TYPE g_dataLockSpeed = portMUX_INITIALIZER_UNLOCKED;
 /*
      data below is locked on read/write
 */
-static float g_speed = 0.0f;
+static int g_speed_pulses = 0;
 static float g_odometer = 0.0f;
+static float g_speed = 0.0f;
 //////////////////////
+void speed_kph(float speed)
+{
+    speed_lock();
+    g_speed = speed;
+    speed_unlock();
+    // ESP_LOGI(TAG, "Speed %.2f", speed);
+}
 
 void speed_pulse()
 {
-    speed_lock();
-    g_speed++;
-    speed_unlock();
+    // ESP_LOGI("PULSE", "Received Pulse");
+
+    speed_pulse_lock();
+    g_speed_pulses++;
+    speed_pulse_unlock();
 }
 int speed_read_reset()
 {
-    speed_lock();
-    float val = g_speed;
-    g_speed = 0;
-    speed_unlock();
+    speed_pulse_lock();
+    int val = g_speed_pulses;
+    g_speed_pulses = 0;
+    speed_pulse_unlock();
     return val;
 }
 
@@ -56,6 +67,16 @@ void distance_set(float s_distance)
     distance_lock();
     g_odometer += s_distance;
     distance_unlock();
+}
+
+void speed_pulse_lock(void)
+{
+    portENTER_CRITICAL(&g_dataLockSpeedPulse);
+}
+
+void speed_pulse_unlock(void)
+{
+    portEXIT_CRITICAL(&g_dataLockSpeedPulse);
 }
 
 void speed_lock(void)
@@ -112,17 +133,21 @@ void display_task(void *args)
         // ESP_LOGI(TAG, "Display updated successfully.");
         speed_lock();
         speed_copy = g_speed;
-        odd_copy = g_odometer;
         speed_unlock();
+        distance_lock();
+        odd_copy = g_odometer;
+        distance_unlock();
         //      if (last_speed != speed_copy)
         //      {
         //          if (last_speed > 0.0)
         //          {
         //              sprintf(buffer, "%04.1f", last_speed);
         //          }
-        sprintf(buffer, "%04.1f", speed_copy);
-        ssd1306_draw_string(ssd1306_dev, 0, 0, (const uint8_t *)buffer, 16, 1);
-
+        if (speed_copy < 100)
+        {
+            sprintf(buffer, "%05.2f", speed_copy);
+            ssd1306_draw_string(ssd1306_dev, 0, 0, (const uint8_t *)buffer, 16, 1);
+        }
         sprintf(buffer, "O %08.2f", odd_copy / 1000.0);
         ssd1306_draw_string(ssd1306_dev, 0, 33, (const uint8_t *)buffer, 16, 1);
 

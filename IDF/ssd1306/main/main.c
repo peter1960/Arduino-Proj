@@ -76,6 +76,6 @@ void app_main(void)
     xTaskCreate(display_task, "display_task", 4096, NULL, 5, NULL);
     xTaskCreate(button_task, "button_task", 4096, NULL, 5, NULL);
     xTaskCreate(wheel_task, "wheel_task", 2048, NULL, 10, NULL);
-    xTaskCreate(avg_task, "avg_task", 2048, NULL, 10, NULL);
+    // xTaskCreate(avg_task, "avg_task", 2048, NULL, 10, NULL);
     xTaskCreate(pulse_task, "pulse_task", 4096, NULL, 5, NULL);
 }

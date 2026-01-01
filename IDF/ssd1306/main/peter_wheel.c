@@ -5,6 +5,7 @@
 #include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include "esp_timer.h"
 #include <esp_cpu.h>
 #include "pins.h"
 #include "peter_wheel.h"
@@ -17,10 +18,13 @@
 
 /* ------------------------------------------------------------------ */
 /* --- CONFIGURABLE SECTION ------------------------------------------- */
-#define SAMPLE_COUNT 5 // how many samples to average
+#define SAMPLE_COUNT 3 // how many samples to average
 #define TASK_PRIORITY (configMAX_PRIORITIES - 1)
 #define TASK_STACK 4096 // stack depth in words (~16 kB)
 
+#define SECONDS_IS_ZERO 3000
+const TickType_t timeoutTicksQueueWait = pdMS_TO_TICKS(SECONDS_IS_ZERO);
+#define timeoutSendQueue (SECONDS_IS_ZERO - 100) * 1000
 /* ------------------------------------------------------------------ */
 /* --- GLOBALS ------------------------------------------------------- */
 
@@ -29,13 +33,6 @@ static int g_samples[SAMPLE_COUNT];
 static uint8_t g_writeIdx = 0; // where the next sample will be written
 static bool g_bufferFull = false;
 
-/* ------------------------------------------------------------------ */
-/* --- SENSOR READ (replace this stub with your own logic) ---------- */
-
-int sensor_read(void)
-{
-    return speed_read_reset();
-}
 /*
  *  avg_task:
  *      runs every second, reads a value from the sensor,
@@ -45,13 +42,16 @@ void avg_task(void *pvParameters)
 {
     (void)pvParameters; // unused
 
+    ESP_LOGI(TAG, "Reset pulse count");
+    speed_read_reset(); // clear any values
+
     for (;;)
     {
         /* ---- 1. Wait until next second --------------------------------- */
         vTaskDelay(pdMS_TO_TICKS(1000));
 
         /* ---- 2. Get the current count ------------------------------- */
-        int current = sensor_read();
+        int current = speed_read_reset();
 
         /* ---- 3. Store it in the ring buffer -------------------------- */
         g_samples[g_writeIdx] = current;
@@ -63,7 +63,7 @@ void avg_task(void *pvParameters)
         }
 
         /* ---- 4. Compute the average --------------------------------- */
-        int sum = 0;
+        float sum = 0.0;
         uint8_t count = g_bufferFull ? SAMPLE_COUNT : g_writeIdx;
 
         for (uint8_t i = 0; i < count; ++i)
@@ -72,9 +72,15 @@ void avg_task(void *pvParameters)
         }
 
         float avg = (count > 0) ? (float)sum / count : 0.0f;
-
         /* ---- 5. Output ---------------------------------------------- */
-        ESP_LOGI(TAG, "cnt=%d  avg over %u sample(s): %.2f", current, count, avg);
+        float mps = WHEEL_CIRCUMFERANCE * avg;
+        float kph = mps * 3.6;
+        // Only set speed when buffer full so average is correct
+        if (g_bufferFull)
+        {
+            speed_kph(kph);
+        }
+        // ESP_LOGI(TAG, "count=%d  avg over %u seconds(s): %.2f  m/s %.2f kmh %.2f", current, count, avg, mps, kph);
     }
 }
 
@@ -86,15 +92,28 @@ static volatile uint64_t s_last_cnt = 0; // last timestamp
 static void IRAM_ATTR gpio_isr_handler(void *arg)
 {
     uint32_t gpio_num = (uint32_t)arg;
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    xQueueSendFromISR(xQueueHandle, &gpio_num, &xHigherPriorityTaskWoken);
-    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+    if (gpio_num == WHEEL_PULSE)
+    {
+        static int64_t last_ts_us = -1;
+        int64_t now_us = esp_timer_get_time();
+        if (last_ts_us >= 0)
+        {
+            int64_t delta_us = now_us - last_ts_us;
+            if (delta_us < 3500000)
+            {
+                BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+                xQueueSendFromISR(xQueueHandle, &delta_us, &xHigherPriorityTaskWoken);
+                portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+            }
+        }
+        last_ts_us = now_us;
+    }
 }
 
 void wheel_task(void *arg)
 {
 
-    xQueueHandle = xQueueCreate(10, sizeof(uint8_t));
+    xQueueHandle = xQueueCreate(10, sizeof(int64_t));
 
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << WHEEL_PULSE),
@@ -119,18 +138,25 @@ void wheel_task(void *arg)
     ESP_ERROR_CHECK(gpio_isr_handler_add(WHEEL_PULSE, gpio_isr_handler, (void *)WHEEL_PULSE));
 
     ESP_LOGI(TAG, "%d lower-edge interrupt initialized.", WHEEL_PULSE);
-    uint32_t gpio_num = 0;
+    uint32_t gpio_num = WHEEL_PULSE;
+    int64_t delta_us;
     while (true)
     {
-        if (xQueueReceive(xQueueHandle, &gpio_num, portMAX_DELAY))
+        // if (xQueueReceive(xQueueHandle, &gpio_num, portMAX_DELAY))
+        if (xQueueReceive(xQueueHandle, &delta_us, timeoutTicksQueueWait) == pdTRUE)
         {
-            if (gpio_num == WHEEL_PULSE)
-            {
-                // ESP_LOGI("EVENT", "Received: %d", gpio_num);
-                distance_set(WHEEL_CIRCUMFERANCE);
-                speed_pulse();
-            }
+            float speed = (WHEEL_CIRCUMFERANCE * 3600.0f) / (delta_us / 1000.0);
+            ESP_LOGI(TAG, "Speed = %.2f kph (%.3f ms, %.3f Hz)", speed, delta_us / 1000.0, delta_us > 0 ? (1e6 / (double)delta_us) : 0.0);
+            // ESP_LOGI("EVENT", "Received: %d", gpio_num);
+            distance_set(WHEEL_CIRCUMFERANCE);
+            speed_kph(speed);
             // ESP_LOGI("GPIO", "Interrupt from GPIO %lu", gpio_num);
+            ESP_LOGI("EVENT", "Pulse");
+        }
+        else
+        {
+            ESP_LOGI("EVENT", "No Pulse");
+            speed_kph(0.0);
         }
         /*
         if (xQueueReceive(xQueueHandle, &evt, portMAX_DELAY))
