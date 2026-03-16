@@ -1,4 +1,4 @@
-# _Sample project_
+# _Calcs_
 
 Given:
 Diameter = 700 mm = 0.7 m
