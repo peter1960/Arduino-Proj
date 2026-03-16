@@ -9,6 +9,7 @@
 #include <ssd1306_fonts.h>
 #include "pins.h"
 #include "peter_display.h"
+#include "peter_sdcard.h"
 
 static const char *TAG = "DISPLAY";
 
@@ -127,6 +128,7 @@ void display_task(void *args)
     char buffer[20];
     //    float last_speed = -1.0;
     bool on = true;
+    int loopPass = 0;
     // ssd1306_clear_display(dev_hdl, false);
     while (true)
     {
@@ -161,6 +163,12 @@ void display_task(void *args)
         on = !on;
         ssd1306_refresh_gram(ssd1306_dev);
         vTaskDelay(pdMS_TO_TICKS(500));
+        loopPass++;
+        if (loopPass >= 9)
+        {
+            sdcard_write(odd_copy / 1000.0);
+            loopPass = 0;
+        }
     }
 }
 

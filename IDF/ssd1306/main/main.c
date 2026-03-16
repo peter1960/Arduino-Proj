@@ -8,6 +8,7 @@
 #include "peter_buttons.h"
 #include "peter_pulse.h"
 #include "peter_wheel.h"
+#include "peter_sdcard.h"
 
 static const char *TAG = "SPEEDO";
 
@@ -72,6 +73,7 @@ void app_main(void)
     // setup_adc1();
     //  speed_mutex_init();
     // flash_init();
+    sdcard_init();
 
     xTaskCreate(display_task, "display_task", 4096, NULL, 5, NULL);
     xTaskCreate(button_task, "button_task", 4096, NULL, 5, NULL);

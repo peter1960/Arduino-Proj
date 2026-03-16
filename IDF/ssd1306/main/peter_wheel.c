@@ -126,6 +126,7 @@ void wheel_task(void *arg)
 
     ESP_ERROR_CHECK(gpio_install_isr_service(0));
     // Configure output GPIO LED
+    /* Not used now
     gpio_config_t io_conf2 = {
         .pin_bit_mask = 1ULL << PULSE_LED_OUT,
         .mode = GPIO_MODE_OUTPUT,
@@ -134,7 +135,7 @@ void wheel_task(void *arg)
         .intr_type = GPIO_INTR_DISABLE};
     gpio_config(&io_conf2);
     gpio_set_level(PULSE_LED_OUT, 0);
-
+    */
     ESP_ERROR_CHECK(gpio_isr_handler_add(WHEEL_PULSE, gpio_isr_handler, (void *)WHEEL_PULSE));
 
     ESP_LOGI(TAG, "%d lower-edge interrupt initialized.", WHEEL_PULSE);
@@ -146,16 +147,16 @@ void wheel_task(void *arg)
         if (xQueueReceive(xQueueHandle, &delta_us, timeoutTicksQueueWait) == pdTRUE)
         {
             float speed = (WHEEL_CIRCUMFERANCE * 3600.0f) / (delta_us / 1000.0);
-            ESP_LOGI(TAG, "Speed = %.2f kph (%.3f ms, %.3f Hz)", speed, delta_us / 1000.0, delta_us > 0 ? (1e6 / (double)delta_us) : 0.0);
-            // ESP_LOGI("EVENT", "Received: %d", gpio_num);
+            // ESP_LOGI(TAG, "Speed = %.2f kph (%.3f ms, %.3f Hz)", speed, delta_us / 1000.0, delta_us > 0 ? (1e6 / (double)delta_us) : 0.0);
+            //  ESP_LOGI("EVENT", "Received: %d", gpio_num);
             distance_set(WHEEL_CIRCUMFERANCE);
             speed_kph(speed);
             // ESP_LOGI("GPIO", "Interrupt from GPIO %lu", gpio_num);
-            ESP_LOGI("EVENT", "Pulse");
+            // ESP_LOGI("EVENT", "Pulse");
         }
         else
         {
-            ESP_LOGI("EVENT", "No Pulse");
+            // ESP_LOGI("EVENT", "No Pulse");
             speed_kph(0.0);
         }
         /*
