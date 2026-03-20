@@ -3,3 +3,4 @@ All Projects live here
 2. Trip Computer using ECU & GPS data
 3. Van level sensor
 4. Bike trip computer from ECU/GPS (Kawasaki)
+5. IDF Bike Computer with epaper
