@@ -6,7 +6,10 @@
 #include <GxEPD2_BW.h>
 #include <GxEPD2_3C.h>
 #include <Fonts/FreeMonoBold9pt7b.h>
+<<<<<<< HEAD
 #include <Fonts/FreeSans12pt7b.h>
+=======
+>>>>>>> a19b12029acc5b0c5bedea8055d383f320b3da57
 #include "rtc-time.h"
 
 // ESP32 CS(SS)=5,SCL(SCK)=18,SDA(MOSI)=23,BUSY=4,RES(RST)=17,DC=16
@@ -56,8 +59,13 @@ void show_time(const char *text)
 {
     uint16_t hwx = 0;
     uint16_t hwy = 0;
+<<<<<<< HEAD
     uint16_t wide = 64 + 8;
     uint16_t high = 16 + 8;
+=======
+    uint16_t wide = 64;
+    uint16_t high = 16;
+>>>>>>> a19b12029acc5b0c5bedea8055d383f320b3da57
     display.setPartialWindow(hwx, hwy, wide, high);
     display.firstPage();
     do
@@ -65,7 +73,11 @@ void show_time(const char *text)
 #if LAYOUT_BOXES
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
 #endif
+<<<<<<< HEAD
         display.setCursor(hwx + 7, hwy + 19);
+=======
+        display.setCursor(hwx + 4, hwy + 13);
+>>>>>>> a19b12029acc5b0c5bedea8055d383f320b3da57
         display.print(text);
     } while (display.nextPage());
 }
@@ -73,8 +85,12 @@ void myTask(void *pvParameters)
 {
     display.init(0, true, 50, false);
     display.setRotation(1);
+<<<<<<< HEAD
     // display.setFont(&FreeMonoBold9pt7b);
     display.setFont(&FreeSans12pt7b);
+=======
+    display.setFont(&FreeMonoBold9pt7b);
+>>>>>>> a19b12029acc5b0c5bedea8055d383f320b3da57
     display.setTextColor(GxEPD_BLACK);
     // display.clearScreen(GxEPD_BLACK);
     display.clearScreen();
