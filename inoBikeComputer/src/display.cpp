@@ -9,6 +9,8 @@
 #include <Fonts/FreeSans12pt7b.h>
 #include "rtc-time.h"
 
+GFXcanvas1 canvas(122, 250);
+
 // ESP32 CS(SS)=5,SCL(SCK)=18,SDA(MOSI)=23,BUSY=4,RES(RST)=17,DC=16
 #define CS_PIN EPD_CS_PIN
 #define BUSY_PIN EPD_BUSY_PIN
@@ -22,8 +24,8 @@
 // GxEPD2_BW<GxEPD2_154_D67, GxEPD2_154_D67::HEIGHT> display(GxEPD2_154_D67(/*CS=5*/ CS_PIN, /*DC=*/ DC_PIN, /*RES=*/ RES_PIN, /*BUSY=*/ BUSY_PIN)); // GDEH0154D67 200x200, SSD1681
 
 // 2.13'' EPD Module - b/w 122x250, SSD1680
-GxEPD2_BW<GxEPD2_213_BN, GxEPD2_213_BN::HEIGHT>
-    display(GxEPD2_213_BN(/*CS=5*/ CS_PIN, /*DC=*/DC_PIN, /*RES=*/RES_PIN, /*BUSY=*/BUSY_PIN)); // DEPG0213BN 122x250, SSD1680
+GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT>
+    display(GxEPD2_213_B74(/*CS=5*/ CS_PIN, /*DC=*/DC_PIN, /*RES=*/RES_PIN, /*BUSY=*/BUSY_PIN)); // DEPG0213BN 122x250, SSD1680
 // GxEPD2_3C<GxEPD2_213_Z98c, GxEPD2_213_Z98c::HEIGHT> display(GxEPD2_213_Z98c(/*CS=5*/ CS_PIN, /*DC=*/ DC_PIN, /*RES=*/ RES_PIN, /*BUSY=*/ BUSY_PIN)); // GDEY0213Z98 122x250, SSD1680
 
 // 2.9'' EPD Module
@@ -52,6 +54,35 @@ void setupDisplay()
         NULL       // Task handle
     );
 }
+ 
+
+static uint8_t refresh_count = 0;
+
+void xshow_time(const char *text)
+{
+    // Full refresh every 10 updates to clear ghosting
+    if (++refresh_count >= 10) {
+        refresh_count = 0;
+        display.setFullWindow();
+        display.firstPage();
+        do { display.fillScreen(GxEPD_WHITE); } while (display.nextPage());
+    }
+
+    uint16_t hwx = 0;
+    uint16_t hwy = 0;
+    uint16_t wide = 64 + 8;
+    uint16_t high = 16 + 8;
+
+    display.setPartialWindow(hwx, hwy, wide, high);
+    display.firstPage();
+    do
+    {
+        display.fillScreen(GxEPD_WHITE);   // <-- fill WHOLE buffer, not just the rect
+        display.setTextColor(GxEPD_BLACK);
+        display.setCursor(hwx + 7, hwy + 19);
+        display.print(text);
+    } while (display.nextPage());
+}
 
 void show_time(const char *text)
 {
@@ -63,32 +94,39 @@ void show_time(const char *text)
     display.firstPage();
     do
     {
+        // Clear the update area
+//        display.writeFillRect(hwx, hwy, wide, high, GxEPD_WHITE);
 #if LAYOUT_BOXES
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
 #endif
+        display.setTextColor(GxEPD_BLACK);
         display.setCursor(hwx + 7, hwy + 19);
         display.print(text);
     } while (display.nextPage());
 }
 void myTask(void *pvParameters)
 {
-    display.init(0, true, 50, false);
+    display.init(0, true, 5, false);
+    //display.init(115200, true, 2, false);
     display.setRotation(1);
     // display.setFont(&FreeMonoBold9pt7b);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
     // display.clearScreen(GxEPD_BLACK);
+    display.setFullWindow();
     display.clearScreen();
-    show_time("00:00");
+    //show_time("00:00");
     display.hibernate();
 
     while (true)
     {
         DateTime now = fetchRTCTime();
 
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(2000));
         char buf[6];
         sprintf(buf, "%02d:%02d", now.hour(), now.minute());
         show_time(buf);
+        display.hibernate();
+
         }
 }
