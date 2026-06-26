@@ -2,7 +2,7 @@
 | Device  | Purpose | Interface | Pins ESP |
 | ------------- | ------------- |------------- |------------- |
 | esp32  | core  |||
-| toggle  | record on/off  |1||
+| toggle  | record on/off  |1|15|
 | button | reset |1||
 | GPS| time/location |Serial||
 | RTC| Store time|SDA/SCL|21/22|

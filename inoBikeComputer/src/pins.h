@@ -8,3 +8,5 @@
 
 #define RTC_SDA_PIN 21
 #define RTC_SCL_PIN 22
+
+#define BUTTON_RECORD_PIN 15

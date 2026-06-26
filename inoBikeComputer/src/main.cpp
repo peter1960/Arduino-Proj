@@ -1,7 +1,8 @@
+#include "Arduino.h"
 #include "pins.h"
+#include "inputs.h"
 #include "display.h"
 #include "rtc-time.h"
-#include "Arduino.h"
 
 // base class GxEPD2_GFX can be used to pass references or pointers to the display instance as parameter, uses ~1.2k more code
 // enable or disable GxEPD2_GFX base class
@@ -11,6 +12,9 @@ void setup()
   Serial.begin(115200);
   delay(3000); // important on ESP32
   Serial.println("Starting inoBikeComputer...");
+  pinMode(BUTTON_RECORD_PIN , INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_RECORD_PIN), recordISR, FALLING);
+
   setupDisplay();
   startRTC();
   /*
