@@ -41,26 +41,54 @@ GxEPD2_BW<GxEPD2_213_B74, GxEPD2_213_B74::HEIGHT>
 // GxEPD2_BW<GxEPD2_420_GDEY042T81, GxEPD2_420_GDEY042T81::HEIGHT> display(GxEPD2_420_GDEY042T81(/*CS=5*/ CS_PIN, /*DC=*/ DC_PIN, /*RES=*/ RES_PIN, /*BUSY=*/ BUSY_PIN)); // 400x300, SSD1683
 // GxEPD2_3C<GxEPD2_420c_GDEY042Z98, GxEPD2_420c_GDEY042Z98::HEIGHT> display(GxEPD2_420c_GDEY042Z98(/*CS=5*/ CS_PIN, /*DC=*/ DC_PIN, /*RES=*/ RES_PIN, /*BUSY=*/ BUSY_PIN)); // 400x300, SSD1683
 
-void myTask(void *pvParameters);
+void displayTask(void *pvParameters);
 
 void setupDisplay()
 {
-
     // Create task
     xTaskCreate(
-        myTask,    // Function
-        "My Task", // Name
-        2048,      // Stack size
-        NULL,      // Parameters
-        1,         // Priority
-        NULL       // Task handle
+        displayTask,    // Function
+        "Display Task", // Name
+        2048,           // Stack size
+        NULL,           // Parameters
+        1,              // Priority
+        NULL            // Task handle
     );
+}
+
+void show_distance()
+{
+    int16_t distance = getDistance();
+
+    char buf[10];
+    sprintf(buf, "%06d", distance);
+
+    uint16_t hwx = 0;
+    uint16_t hwy = (8 * 12) - 1;
+    uint16_t wide = 8 * 12;
+    uint16_t high = 8 * 3;
+    display.setFont(&FreeSans12pt7b);
+    display.setTextColor(GxEPD_BLACK);
+
+    display.setPartialWindow(hwx, hwy, wide, high);
+    display.firstPage();
+    do
+    {
+        // Clear the update area
+        display.writeFillRect(hwx, hwy, wide, high, GxEPD_WHITE);
+#if LAYOUT_BOXES
+        display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
+#endif
+        display.setTextColor(GxEPD_BLACK);
+        display.setCursor(hwx + 7, hwy + 19);
+        display.print(buf);
+    } while (display.nextPage());
 }
 
 void show_rec()
 {
 
-    uint16_t hwx = 8 * 26;
+    uint16_t hwx = (8 * 26) - 1;
     uint16_t hwy = 0;
     uint16_t wide = 8 * 5;
     uint16_t high = 8 * 3;
@@ -111,7 +139,7 @@ void show_time()
     do
     {
         // Clear the update area
-//        display.writeFillRect(hwx, hwy, wide, high, GxEPD_WHITE);
+        display.writeFillRect(hwx, hwy, wide, high, GxEPD_WHITE);
 #if LAYOUT_BOXES
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
 #endif
@@ -120,7 +148,7 @@ void show_time()
         display.print(buf);
     } while (display.nextPage());
 }
-void myTask(void *pvParameters)
+void displayTask(void *pvParameters)
 {
     uint8_t refresh_count = 0;
 
@@ -137,7 +165,7 @@ void myTask(void *pvParameters)
 
     while (true)
     {
-        if (++refresh_count >= 600)
+        if (++refresh_count >= 60)
         {
             refresh_count = 0;
             display.setFullWindow();
@@ -152,6 +180,7 @@ void myTask(void *pvParameters)
 
         show_time();
         show_rec();
+        show_distance();
         display.powerOff();
     }
 }

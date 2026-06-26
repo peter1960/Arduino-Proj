@@ -3,6 +3,7 @@
 #include "inputs.h"
 #include "display.h"
 #include "rtc-time.h"
+#include "pulses.h"
 
 // base class GxEPD2_GFX can be used to pass references or pointers to the display instance as parameter, uses ~1.2k more code
 // enable or disable GxEPD2_GFX base class
@@ -16,6 +17,8 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(BUTTON_RECORD_PIN), recordISR, FALLING);
 
   setupDisplay();
+  
+  setupPulses();
   startRTC();
   /*
   display.init(115200, true, 50, false);
