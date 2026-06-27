@@ -14,7 +14,9 @@ void setup()
   delay(3000); // important on ESP32
   Serial.println("Starting inoBikeComputer...");
   pinMode(BUTTON_RECORD_PIN , INPUT_PULLUP);
+  pinMode(BUTTON_RESET_PIN , INPUT_PULLUP);
   attachInterrupt(digitalPinToInterrupt(BUTTON_RECORD_PIN), recordISR, FALLING);
+  attachInterrupt(digitalPinToInterrupt(BUTTON_RESET_PIN), resetISR, FALLING);
 
   setupDisplay();
   

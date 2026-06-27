@@ -24,6 +24,19 @@ void IRAM_ATTR recordISR()
     }
 }
 
+void IRAM_ATTR resetISR()
+{
+
+    static uint32_t lastMillis = 0;
+    uint32_t now = millis();
+    if (now - lastMillis > 50)
+    {
+        resetTripDistance();
+        lastMillis = now;
+    }
+}
+
+
 bool isRecord()
 {
     return recordState.load();
@@ -63,8 +76,8 @@ void loadDistance() {
 void saveTask(void *pvParameters) {
     while (true) {
         vTaskDelay(pdMS_TO_TICKS(10000));
-        prefs.begin("app", false);
-        prefs.putShort("distance", distanceState.load());
-        prefs.end();
+        //prefs.begin("app", false);
+        //prefs.putShort("distance", distanceState.load());
+        //prefs.end();
     }
 }

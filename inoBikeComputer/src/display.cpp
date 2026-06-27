@@ -6,7 +6,7 @@
 
 #include <GxEPD2_BW.h>
 #include <GxEPD2_3C.h>
-// #include <Fonts/FreeMonoBold9pt7b.h>
+#include <Fonts/FreeSansBoldOblique24pt7b.h>
 #include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSans12pt7b.h>
 #include "rtc-time.h"
@@ -61,24 +61,49 @@ void show_distance()
     int16_t distance = getDistance();
 
     char buf[10];
-    sprintf(buf, "%06d", distance);
 
     uint16_t hwx = 0;
     uint16_t hwy = (8 * 12) - 1;
     uint16_t wide = 8 * 12;
     uint16_t high = 8 * 3;
+
+    sprintf(buf, "%07.2f", (distance * WHEEL_CIRCUMFERANCE) / 1000.0f);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
-
     display.setPartialWindow(hwx, hwy, wide, high);
     display.firstPage();
     do
     {
         // Clear the update area
         display.writeFillRect(hwx, hwy, wide, high, GxEPD_WHITE);
-#if LAYOUT_BOXES
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
-#endif
+        display.setTextColor(GxEPD_BLACK);
+        display.setCursor(hwx + 7, hwy + 19);
+        display.print(buf);
+    } while (display.nextPage());
+}
+void show_tripdistance()
+{
+
+    int16_t tripDistance = getTripDistance();
+
+    char buf[10];
+
+    uint16_t hwx = (8 * 12) - 1;
+    uint16_t hwy = (8 * 12) - 1;
+    uint16_t wide = 8 * 12;
+    uint16_t high = 8 * 3;
+
+    sprintf(buf, "%07.2f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
+    display.setFont(&FreeSans12pt7b);
+    display.setTextColor(GxEPD_BLACK);
+    display.setPartialWindow(hwx, hwy, wide, high);
+    display.firstPage();
+    do
+    {
+        // Clear the update area
+        display.writeFillRect(hwx, hwy, wide, high, GxEPD_WHITE);
+        display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
         display.setTextColor(GxEPD_BLACK);
         display.setCursor(hwx + 7, hwy + 19);
         display.print(buf);
@@ -112,6 +137,45 @@ void show_rec()
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
         display.setCursor(hwx + 5, hwy + 17);
         display.print("Rec");
+
+        //        {
+        //            display.drawLine(hwx + 2, hwy + 2, hwx + wide - 2, hwy + high - 2, GxEPD_BLACK);
+        //       }
+
+    } while (display.nextPage());
+}
+
+void show_speed()
+{
+
+    uint16_t hwx = 0;
+    uint16_t hwy = (8 * 4) - 1;
+    uint16_t wide = 8 * 22;
+    uint16_t high = 8 * 5;
+    display.setFont(&FreeSansBoldOblique24pt7b);
+    display.setTextColor(GxEPD_BLACK);
+
+    char buf[10];
+    float speed =  (random(0, 4050) / 100.0f);
+    sprintf(buf, "%5.1f", speed); 
+
+    display.setPartialWindow(hwx, hwy, wide, high);
+    display.firstPage();
+    do
+    {
+        if (!isRecord())
+        {
+            display.fillRect(hwx, hwy, wide, high, GxEPD_WHITE);
+            display.setTextColor(GxEPD_BLACK);
+        }
+        else
+        {
+            display.fillRect(hwx, hwy, wide, high, GxEPD_BLACK);
+            display.setTextColor(GxEPD_WHITE);
+        }
+        display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
+        display.setCursor(hwx + 5, hwy + high - 5);
+        display.print(buf);
 
         //        {
         //            display.drawLine(hwx + 2, hwy + 2, hwx + wide - 2, hwy + high - 2, GxEPD_BLACK);
@@ -165,7 +229,7 @@ void displayTask(void *pvParameters)
 
     while (true)
     {
-        if (++refresh_count >= 60)
+        if (++refresh_count >= 600)
         {
             refresh_count = 0;
             display.setFullWindow();
@@ -181,6 +245,8 @@ void displayTask(void *pvParameters)
         show_time();
         show_rec();
         show_distance();
+        show_tripdistance();
+        show_speed();
         display.powerOff();
     }
 }

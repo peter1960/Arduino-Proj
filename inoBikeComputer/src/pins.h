@@ -1,5 +1,10 @@
+/**
+ * @file pins.h
+ * @brief Pin definitions for the project.  
+ * For clean INPUT_PULLUP button inputs, the safest picks are 4, 13, 14, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33.
+ */
 #define EPD_SCL_PIN 18
-#define EDP_SDA_PIN 23
+#define EPD_SDA_PIN 23
 
 #define EPD_CS_PIN 5
 #define EPD_BUSY_PIN 4
@@ -10,3 +15,6 @@
 #define RTC_SCL_PIN 22
 
 #define BUTTON_RECORD_PIN 15
+#define BUTTON_RESET_PIN 14
+
+#define WHEEL_CIRCUMFERANCE 2.199

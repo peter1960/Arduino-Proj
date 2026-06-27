@@ -29,7 +29,7 @@ void pulseTask(void *pvParameters)
     loadDistance();
     while (true)
     {
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        vTaskDelay(pdMS_TO_TICKS(1000));
         addTripDistance(1);
     }
 }
