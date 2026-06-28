@@ -36,6 +36,17 @@ void IRAM_ATTR resetISR()
     }
 }
 
+void IRAM_ATTR wheelISR()
+{
+
+    static uint32_t lastMillis = 0;
+    uint32_t now = millis();
+    if (now - lastMillis > 50)
+    {
+        addTripDistance(1);
+        lastMillis = now;
+    }
+}
 
 bool isRecord()
 {

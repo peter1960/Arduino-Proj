@@ -58,8 +58,12 @@ void setupDisplay()
 
 void show_distance()
 {
+    static int16_t lastDistance = -1;
     int16_t distance = getDistance();
-
+    if (distance == lastDistance)
+    {
+        return; // No change in distance, no need to update display
+    }
     char buf[10];
 
     uint16_t hwx = 0;
@@ -84,9 +88,12 @@ void show_distance()
 }
 void show_tripdistance()
 {
-
+    static int16_t lastTripDistance = -1;
     int16_t tripDistance = getTripDistance();
-
+    if (tripDistance == lastTripDistance)
+    {
+        return; // No change in trip distance, no need to update display
+    }
     char buf[10];
 
     uint16_t hwx = (8 * 12) - 1;
@@ -110,8 +117,13 @@ void show_tripdistance()
     } while (display.nextPage());
 }
 
+/**
+ * Show recording status on the display
+ */
 void show_rec()
 {
+    static bool lastRecordState = false;
+    bool recordState = isRecord();
 
     uint16_t hwx = (8 * 26) - 1;
     uint16_t hwy = 0;
@@ -124,7 +136,7 @@ void show_rec()
     display.firstPage();
     do
     {
-        if (!isRecord())
+        if (!recordState)
         {
             display.fillRect(hwx, hwy, wide, high, GxEPD_WHITE);
             display.setTextColor(GxEPD_BLACK);
@@ -137,10 +149,6 @@ void show_rec()
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
         display.setCursor(hwx + 5, hwy + 17);
         display.print("Rec");
-
-        //        {
-        //            display.drawLine(hwx + 2, hwy + 2, hwx + wide - 2, hwy + high - 2, GxEPD_BLACK);
-        //       }
 
     } while (display.nextPage());
 }
@@ -156,8 +164,8 @@ void show_speed()
     display.setTextColor(GxEPD_BLACK);
 
     char buf[10];
-    float speed =  (random(0, 4050) / 100.0f);
-    sprintf(buf, "%5.1f", speed); 
+    float speed = (random(0, 4050) / 100.0f);
+    sprintf(buf, "%5.1f", speed);
 
     display.setPartialWindow(hwx, hwy, wide, high);
     display.firstPage();
