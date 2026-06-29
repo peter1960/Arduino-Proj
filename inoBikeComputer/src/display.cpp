@@ -67,9 +67,9 @@ void show_distance()
     char buf[10];
 
     uint16_t hwx = 0;
-    uint16_t hwy = (8 * 12) - 1;
-    uint16_t wide = 8 * 12;
-    uint16_t high = 8 * 3;
+    uint16_t hwy = 64;
+    uint16_t wide = 96;
+    uint16_t high = 24;
 
     sprintf(buf, "%07.2f", (distance * WHEEL_CIRCUMFERANCE) / 1000.0f);
     display.setFont(&FreeSans12pt7b);
@@ -94,14 +94,16 @@ void show_tripdistance()
     {
         return; // No change in trip distance, no need to update display
     }
+    
+    lastTripDistance = tripDistance;
     char buf[10];
 
-    uint16_t hwx = (8 * 12) - 1;
-    uint16_t hwy = (8 * 12) - 1;
-    uint16_t wide = 8 * 12;
-    uint16_t high = 8 * 3;
+    uint16_t hwx = 0;
+    uint16_t hwy = 88;
+    uint16_t wide = 96;
+    uint16_t high = 24;
 
-    sprintf(buf, "%07.2f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
+    sprintf(buf, "%07.0f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
     display.setPartialWindow(hwx, hwy, wide, high);
@@ -125,7 +127,7 @@ void show_rec()
     static bool lastRecordState = false;
     bool recordState = isRecord();
 
-    uint16_t hwx = (8 * 26) - 1;
+    uint16_t hwx = 8 * 26;
     uint16_t hwy = 0;
     uint16_t wide = 8 * 5;
     uint16_t high = 8 * 3;
@@ -157,9 +159,9 @@ void show_speed()
 {
 
     uint16_t hwx = 0;
-    uint16_t hwy = (8 * 4) - 1;
-    uint16_t wide = 8 * 22;
-    uint16_t high = 8 * 5;
+    uint16_t hwy = 24;
+    uint16_t wide = 136;
+    uint16_t high = 40;
     display.setFont(&FreeSansBoldOblique24pt7b);
     display.setTextColor(GxEPD_BLACK);
 
@@ -171,18 +173,10 @@ void show_speed()
     display.firstPage();
     do
     {
-        if (!isRecord())
-        {
-            display.fillRect(hwx, hwy, wide, high, GxEPD_WHITE);
-            display.setTextColor(GxEPD_BLACK);
-        }
-        else
-        {
-            display.fillRect(hwx, hwy, wide, high, GxEPD_BLACK);
-            display.setTextColor(GxEPD_WHITE);
-        }
+        display.fillRect(hwx, hwy, wide, high, GxEPD_WHITE);
+        display.setTextColor(GxEPD_BLACK);
         display.drawRect(hwx, hwy, wide, high, GxEPD_BLACK);
-        display.setCursor(hwx + 5, hwy + high - 5);
+        display.setCursor(hwx + 5, hwy + high - 4);
         display.print(buf);
 
         //        {
@@ -201,8 +195,8 @@ void show_time()
 
     uint16_t hwx = 0;
     uint16_t hwy = 0;
-    uint16_t wide = 64 + 8;
-    uint16_t high = 16 + 8;
+    uint16_t wide = 72;
+    uint16_t high = 24;
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
 
@@ -226,7 +220,7 @@ void displayTask(void *pvParameters)
 
     display.init(0, true, 5, false);
     // display.init(115200, true, 2, false);
-    display.setRotation(1);
+    display.setRotation(3);
     // display.setFont(&FreeMonoBold9pt7b);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
@@ -237,7 +231,8 @@ void displayTask(void *pvParameters)
 
     while (true)
     {
-        if (++refresh_count >= 600)
+        refresh_count++;
+        if (refresh_count >= 600)
         {
             refresh_count = 0;
             display.setFullWindow();
@@ -246,8 +241,27 @@ void displayTask(void *pvParameters)
             {
                 display.clearScreen();
                 display.fillScreen(GxEPD_WHITE);
+                /* test rotation block
+                display.writeFillRect(0, 0, 8, 8, GxEPD_BLACK);
+                display.writeFillRect(8, 8, 32, 8, GxEPD_BLACK);
+                display.writeFillRect(8 * 2, 8 * 2, 8, 8, GxEPD_BLACK);
+                display.writeFillRect(8 * 3, 8 * 3, 8, 8, GxEPD_BLACK);
+                display.writeFillRect(8 * 4, 8 * 4, 8, 8, GxEPD_BLACK);
+                display.writeFillRect(8 * 5, 8 * 5, 8, 8, GxEPD_BLACK);
+                */
             } while (display.nextPage());
         }
+        /*
+        else
+        {
+            display.setPartialWindow(16, 16, 8, 8);
+            do
+            {
+                display.writeFillRect(16, 16, 8, 8, GxEPD_WHITE);
+                //display.writeFillRect(16, 16, 8, 8, GxEPD_BLACK);
+            } while (display.nextPage());
+        }
+            */
         vTaskDelay(pdMS_TO_TICKS(1000));
 
         show_time();
