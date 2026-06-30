@@ -58,8 +58,8 @@ void setupDisplay()
 
 void show_distance()
 {
-    static int16_t lastDistance = -1;
-    int16_t distance = getDistance();
+    static uint32_t lastDistance = -1;
+    uint32_t distance = getDistance();
     if (distance == lastDistance)
     {
         return; // No change in distance, no need to update display
@@ -88,8 +88,8 @@ void show_distance()
 }
 void show_tripdistance()
 {
-    static int16_t lastTripDistance = -1;
-    int16_t tripDistance = getTripDistance();
+    static uint32_t lastTripDistance = -1;
+    uint32_t tripDistance = getTripDistance();
     if (tripDistance == lastTripDistance)
     {
         return; // No change in trip distance, no need to update display
@@ -103,7 +103,7 @@ void show_tripdistance()
     uint16_t wide = 96;
     uint16_t high = 24;
 
-    sprintf(buf, "%07.0f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
+    sprintf(buf, "%06.0f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
     display.setPartialWindow(hwx, hwy, wide, high);

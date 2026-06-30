@@ -3,10 +3,10 @@ bool isRecord();
 void recordISR();
 void resetISR();
 void wheelISR();
-void addDistance(int16_t distance);
-int16_t getDistance();
-void addTripDistance(int16_t distance);
-int16_t getTripDistance();
+void addDistance(uint8_t distance);
+uint32_t getDistance();
+void addTripDistance(uint8_t distance);
+uint32_t getTripDistance();
 void resetTripDistance();
 void loadDistance() ;
 

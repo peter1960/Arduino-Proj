@@ -8,8 +8,8 @@ Preferences prefs;
 
 
 std::atomic<bool> recordState{false};
-std::atomic<int16_t> distanceState{0};
-std::atomic<int16_t> tripState{0};
+std::atomic<uint32_t> distanceState{0};
+std::atomic<uint32_t> tripState{0};
 
 void IRAM_ATTR recordISR()
 {
@@ -53,17 +53,17 @@ bool isRecord()
     return recordState.load();
 }
 
-void addDistance(int16_t distance)
+void addDistance(uint8_t distance)
 {
     distanceState.fetch_add(distance);
 }   
 
-int16_t getDistance()
+uint32_t getDistance()
 {
     return distanceState.load();
 }   
 
-int16_t getTripDistance()
+uint32_t getTripDistance()
 {
     return tripState.load();
 }
@@ -71,7 +71,7 @@ void resetTripDistance()
 {
     tripState.store(0);
 }
-void addTripDistance(int16_t distance)
+void addTripDistance(uint8_t distance)
 {
     addDistance(distance);
     tripState.fetch_add(distance);
