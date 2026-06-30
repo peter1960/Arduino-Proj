@@ -71,7 +71,7 @@ void show_distance()
     uint16_t wide = 96;
     uint16_t high = 24;
 
-    sprintf(buf, "%07.2f", (distance * WHEEL_CIRCUMFERANCE) / 1000.0f);
+    sprintf(buf, "%06.0f", (distance * WHEEL_CIRCUMFERANCE) / 1000.0f);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
     display.setPartialWindow(hwx, hwy, wide, high);
@@ -103,7 +103,7 @@ void show_tripdistance()
     uint16_t wide = 96;
     uint16_t high = 24;
 
-    sprintf(buf, "%06.0f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
+    sprintf(buf, "%07.2f", (tripDistance * WHEEL_CIRCUMFERANCE) / 1000.0f);
     display.setFont(&FreeSans12pt7b);
     display.setTextColor(GxEPD_BLACK);
     display.setPartialWindow(hwx, hwy, wide, high);
