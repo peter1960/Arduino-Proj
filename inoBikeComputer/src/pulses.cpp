@@ -40,7 +40,7 @@ void pulseTask(void *pvParameters)
     loadDistance();
     while (true)
     {
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        vTaskDelay(pdMS_TO_TICKS(500));
         pinMode(WHEEL_SENSOR_PIN, OUTPUT);
         digitalWrite(WHEEL_SENSOR_PIN, HIGH);
         vTaskDelay(pdMS_TO_TICKS(100));
